@@ -134,6 +134,26 @@ local function UpdatePlayerJob(playerId, job)
     }
 end
 
+local function EnsurePlayerInitialized(playerId)
+    if Players[playerId] then
+        return true
+    end
+
+    if Framework == 'ESX' and ESX then
+        local xPlayer = ESX.GetPlayerFromId(playerId)
+        if xPlayer then
+            InitializePlayer(playerId, xPlayer)
+        end
+    elseif Framework == 'QBCore' and QBCore then
+        local player = QBCore.Functions.GetPlayer(playerId)
+        if player and player.PlayerData then
+            InitializePlayer(playerId, player.PlayerData)
+        end
+    end
+
+    return Players[playerId] ~= nil
+end
+
 local function InitializeESX()
     Framework = 'ESX'
     ESX = exports['es_extended']:getSharedObject()
@@ -197,7 +217,7 @@ end
 
 RegisterNetEvent('gps_tracker:updatePosition', function(positionData)
     local playerId = source
-    if not Players[playerId] then return end
+    if not EnsurePlayerInitialized(playerId) then return end
 
     local coords = positionData and positionData.coords
     if not coords then
@@ -215,7 +235,7 @@ end)
 
 RegisterNetEvent('gps_tracker:disableTracker', function()
     local playerId = source
-    if not Players[playerId] then return end
+    if not EnsurePlayerInitialized(playerId) then return end
 
     Players[playerId].trackerEnabled = false
     TriggerClientEvent('gps_tracker:playerDisconnected', -1, playerId)
@@ -223,7 +243,7 @@ end)
 
 RegisterNetEvent('gps_tracker:setCallsign', function(callsign)
     local playerId = source
-    if not Players[playerId] then return end
+    if not EnsurePlayerInitialized(playerId) then return end
 
     callsign = (callsign or ''):sub(1, 32)
     Players[playerId].callsign = callsign
@@ -233,13 +253,13 @@ end)
 
 RegisterNetEvent('gps_tracker:getNearbyPlayers', function()
     local playerId = source
-    if not Players[playerId] then return end
+    if not EnsurePlayerInitialized(playerId) then return end
     TriggerClientEvent('gps_tracker:updateBlips', playerId, GetNearbyPlayers(playerId))
 end)
 
 RegisterNetEvent('gps_tracker:requestPlayerData', function()
     local playerId = source
-    if not Players[playerId] then return end
+    if not EnsurePlayerInitialized(playerId) then return end
     TriggerClientEvent('gps_tracker:updateBlips', playerId, GetNearbyPlayers(playerId))
 end)
 

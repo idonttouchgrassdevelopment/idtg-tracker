@@ -112,7 +112,7 @@ Config.StandardColors = {
 Config.BlipSizes = {
     tiny = 0.5,       -- Very small, subtle
     small = 0.8,      -- Small, visible but not obtrusive
-    medium = 1.2,     -- Medium size, good visibility (DEFAULT)
+    medium = 1.0,     -- Medium size, good visibility (DEFAULT)
     large = 1.8,      -- Large, very visible
     huge = 2.5,       -- Very large, hard to miss
 }
@@ -132,7 +132,7 @@ Config.Jobs = {
         blip = {
             sprite = 1,           -- Blip sprite (1 = standard police blip)
             color = 38,           -- Blip color (38 = blue)
-            scale = 2.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
+            scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'LSPD Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
         },
@@ -149,7 +149,7 @@ Config.Jobs = {
         blip = {
             sprite = 1,           -- Blip sprite (1 = standard police blip)
             color = 70,           -- Blip color (38 = blue)
-            scale = 2.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
+            scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'SASP Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
         },
@@ -166,7 +166,7 @@ Config.Jobs = {
         blip = {
             sprite = 1,           -- Blip sprite (1 = standard police blip)
             color = 10,           -- Blip color (38 = blue)
-            scale = 2.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
+            scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'FIB Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
         },
@@ -183,7 +183,7 @@ Config.Jobs = {
         blip = {
             sprite = 1,
             color = 38,
-            scale = 2.0,          -- Increased for better visibility
+            scale = 1.0,          -- Increased for better visibility
             label = 'Sheriff Unit',
             showDistance = true,
         },
@@ -198,7 +198,7 @@ Config.Jobs = {
         blip = {
             sprite = 61,          -- Medical cross sprite
             color = 1,            -- White color
-            scale = 2.0,          -- Increased for better visibility
+            scale = 1.0,          -- Increased for better visibility
             label = 'EMS Unit',
             showDistance = true,
         },
@@ -213,7 +213,7 @@ Config.Jobs = {
         blip = {
             sprite = 436,         -- Fire department sprite
             color = 5,            -- Orange color
-            scale = 2.0,          -- Increased for better visibility
+            scale = 1.0,          -- Increased for better visibility
             label = 'Fire Unit',
             showDistance = true,
         },
@@ -228,7 +228,7 @@ Config.Jobs = {
         blip = {
             sprite = 50,          -- Security blip
             color = 5,            -- Orange color
-            scale = 2.0,          -- Increased for better visibility
+            scale = 1.0,          -- Increased for better visibility
             label = 'Security',
             showDistance = true,
         },
@@ -362,7 +362,7 @@ Config.QBCore = {
 -- 1. Use predefined sizes:
 --    scale = Config.BlipSizes.tiny       -- 0.5
 --    scale = Config.BlipSizes.small      -- 0.8
---    scale = Config.BlipSizes.medium     -- 1.2 (RECOMMENDED)
+--    scale = Config.BlipSizes.medium     -- 1.0 (RECOMMENDED)
 --    scale = Config.BlipSizes.large      -- 1.8
 --    scale = Config.BlipSizes.huge       -- 2.5
 --
@@ -500,7 +500,7 @@ Config.QBCore = {
 -- - Custom Factions: Use Config.CustomColors to create unique colors
 --
 -- SIZE RECOMMENDATIONS:
--- - Small squads (5-10 players): scale = Config.BlipSizes.medium (1.2)
+-- - Small squads (5-10 players): scale = Config.BlipSizes.medium (1.0)
 -- - Medium departments (10-30 players): scale = Config.BlipSizes.large (1.8)
 -- - Large departments (30+ players): scale = Config.BlipSizes.huge (2.5)
 -- - Covert operations: scale = Config.BlipSizes.small (0.8)

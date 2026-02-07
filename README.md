@@ -215,12 +215,12 @@ QBCore automatically handles duty status through the job object.
 Blip sizes range from 0.1 (tiny) to 5.0 (huge). Here are recommendations:
 
 **For Different Department Sizes:**
-- **Small departments (5-10 players)**: Medium size (1.2)
+- **Small departments (5-10 players)**: Medium size (1.0)
 - **Medium departments (10-30 players)**: Large size (1.8)
 - **Large departments (30+ players)**: Huge size (2.5)
 
 **For Different Use Cases:**
-- **Regular patrol**: Medium (1.2) or Large (1.8)
+- **Regular patrol**: Medium (1.0) or Large (1.8)
 - **Emergency response**: Large (1.8) or Huge (2.5)
 - **Covert operations**: Small (0.8)
 - **Maximum visibility**: Huge (2.5)
@@ -229,7 +229,7 @@ Blip sizes range from 0.1 (tiny) to 5.0 (huge). Here are recommendations:
 ```lua
 Config.BlipSizes.tiny      -- 0.5 (Very subtle)
 Config.BlipSizes.small     -- 0.8 (Standard)
-Config.BlipSizes.medium    -- 1.2 (Recommended)
+Config.BlipSizes.medium    -- 1.0 (Recommended)
 Config.BlipSizes.large     -- 1.8 (Very visible)
 Config.BlipSizes.huge      -- 2.5 (Hard to miss)
 ```
@@ -326,14 +326,14 @@ See the `config.lua` file for the complete color reference with detailed descrip
 
 ### Blip Sizes
 - `0.5` - Tiny (very subtle)
-- `0.8` - Small (default)
-- `1.2` - Medium (recommended)
+- `0.8` - Small
+- `1.0` - Medium (recommended default)
 - `1.8` - Large (very visible)
 - `2.5` - Huge (hard to miss)
 
 You can also use predefined sizes from `Config.BlipSizes`:
 ```lua
-scale = Config.BlipSizes.medium     -- 1.2
+scale = Config.BlipSizes.medium     -- 1.0
 scale = Config.BlipSizes.large      -- 1.8
 scale = Config.BlipSizes.huge       -- 2.5
 ```

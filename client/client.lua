@@ -180,7 +180,7 @@ local function CreateOrUpdateBlip(data)
     local coords = data.coords
     local jobBlip = data.blip or {}
     local color = ResolveBlipColor(jobBlip.color)
-    local scale = tonumber(jobBlip.scale) or 1.2
+    local scale = tonumber(jobBlip.scale) or 1.0
     local sprite = tonumber(jobBlip.sprite) or 1
 
     local blip = PlayerBlips[data.serverId]
