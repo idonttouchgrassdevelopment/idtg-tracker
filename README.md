@@ -483,10 +483,6 @@ This script is provided as-is for use in FiveM roleplay servers. Feel free to mo
 - Performance optimization
 - Comprehensive documentation
 
-## Credits
-
-Developed by SuperNinja for the FiveM community.
-
 ## Additional Resources
 
 - [FiveM Documentation](https://docs.fivem.net/)
