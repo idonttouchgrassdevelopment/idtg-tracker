@@ -10,7 +10,7 @@ A complete, production-ready GPS tracking system for FiveM roleplay servers. Fea
 - **Optional Item Requirement**: Configurable requirement for players to have a specific item in inventory
 - **Framework Support**: Full compatibility with ESX and QBCore frameworks
 - **Performance Optimized**: Efficient update intervals and batch processing for high-player-count servers
-- **Customizable Blips**: Configure different blip sprites, colors, and sizes per job type (with player-name labels + optional callsigns)
+- **Customizable Blips**: Configure different blip sprites, colors, and sizes per job type with player-name labels
 - **Distance Limiting**: Optional maximum distance for blip visibility
 
 ## Requirements
@@ -95,7 +95,7 @@ Config.Jobs = {
             label = 'Police Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
         },
-        visibleTo = {'police', 'sheriff', 'ems'}, -- Who can see them
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance'}, -- Who can see them
         requireOnDuty = true,     -- Must be on duty
     },
 }
@@ -113,7 +113,7 @@ visibleTo = {'police'}
 visibleTo = {'police', 'sheriff'}
 
 -- All emergency services can see each other
-visibleTo = {'police', 'sheriff', 'ems', 'fire'}
+visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire'}
 
 -- Anyone with tracker can see them (not recommended for RP)
 visibleTo = {'all'}
@@ -177,7 +177,6 @@ By default, the following commands are available (configure in `config.lua`):
 - `/enabletracker` - Manually enable the GPS tracker
 - `/disabletracker` - Manually disable the GPS tracker
 - `/trackerstatus` - Check current tracker status
-- `/setcallsign <text>` - Set or clear your map callsign (leave empty to clear)
 
 ## Framework-Specific Notes
 

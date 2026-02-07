@@ -99,7 +99,6 @@ local function InitializePlayer(playerId, playerData)
     Players[playerId] = {
         serverId = playerId,
         name = GetPlayerNameByFramework(playerId),
-        callsign = '',
         job = job,
         coords = nil,
         lastUpdate = 0,
@@ -203,7 +202,6 @@ local function GetNearbyPlayers(requesterId)
                 table.insert(nearbyPlayers, {
                     serverId = playerId,
                     playerName = playerData.name,
-                    callsign = playerData.callsign,
                     job = playerData.job,
                     blip = (Config.Jobs[targetConfigJobName] and Config.Jobs[targetConfigJobName].blip) or {},
                     coords = playerData.coords
@@ -239,16 +237,6 @@ RegisterNetEvent('gps_tracker:disableTracker', function()
 
     Players[playerId].trackerEnabled = false
     TriggerClientEvent('gps_tracker:playerDisconnected', -1, playerId)
-end)
-
-RegisterNetEvent('gps_tracker:setCallsign', function(callsign)
-    local playerId = source
-    if not EnsurePlayerInitialized(playerId) then return end
-
-    callsign = (callsign or ''):sub(1, 32)
-    Players[playerId].callsign = callsign
-
-    TriggerClientEvent('gps_tracker:updateBlips', playerId, GetNearbyPlayers(playerId))
 end)
 
 RegisterNetEvent('gps_tracker:getNearbyPlayers', function()

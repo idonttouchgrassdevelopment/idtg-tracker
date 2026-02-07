@@ -138,7 +138,7 @@ Config.Jobs = {
         },
         -- Jobs that can see this job's players on the map
         -- Use 'all' to allow all configured jobs to see them
-        visibleTo = {'police', 'sheriff', 'ems', 'fire', 'sasp', 'bcso', 'fib'},
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
         -- Require player to be on duty to use tracker
         requireOnDuty = true,
     },
@@ -155,7 +155,7 @@ Config.Jobs = {
         },
         -- Jobs that can see this job's players on the map
         -- Use 'all' to allow all configured jobs to see them
-        visibleTo = {'police', 'sheriff', 'ems', 'fire', 'sasp', 'bcso', 'fib'},
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
         -- Require player to be on duty to use tracker
         requireOnDuty = true,
     },
@@ -172,7 +172,7 @@ Config.Jobs = {
         },
         -- Jobs that can see this job's players on the map
         -- Use 'all' to allow all configured jobs to see them
-        visibleTo = {'police', 'sheriff', 'ems', 'fire', 'sasp', 'bcso', 'fib'},
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
         -- Require player to be on duty to use tracker
         requireOnDuty = true,
     },
@@ -188,7 +188,7 @@ Config.Jobs = {
             showDistance = true,
         },
         -- Sheriff and police can see each other
-        visibleTo = {'police', 'sheriff', 'ems', 'fire', 'sasp', 'bcso', 'fib'},
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
         requireOnDuty = true,
     },
     
@@ -203,10 +203,25 @@ Config.Jobs = {
             showDistance = true,
         },
         -- EMS can see all emergency services
-        visibleTo = {'police', 'sheriff', 'ems', 'fire', 'sasp', 'bcso', 'fib'},
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
         requireOnDuty = true,
     },
     
+    -- EMS alias for servers that use the ambulance job name
+    ['ambulance'] = {
+        enabled = true,
+        blip = {
+            sprite = 61,          -- Medical cross sprite
+            color = 49,            -- White color
+            scale = 1.0,          -- Increased for better visibility
+            label = 'EMS Unit',
+            showDistance = true,
+        },
+        -- EMS can see all emergency services
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
+        requireOnDuty = true,
+    },
+
     -- Fire Department
     ['fire'] = {
         enabled = true,
@@ -218,7 +233,7 @@ Config.Jobs = {
             showDistance = true,
         },
         -- Fire can see all emergency services
-        visibleTo = {'police', 'sheriff', 'ems', 'fire', 'sasp', 'bcso', 'fib'},
+        visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},
         requireOnDuty = true,
     },
     
@@ -267,7 +282,6 @@ Config.Commands = {
     enable = 'enabletracker',    -- Command to manually enable tracker
     disable = 'disabletracker',  -- Command to manually disable tracker
     status = 'trackerstatus',    -- Command to check tracker status
-    callsign = 'setcallsign',    -- Command to set your callsign (example: /setcallsign A-12)
 }
 
 -- =============================================================================

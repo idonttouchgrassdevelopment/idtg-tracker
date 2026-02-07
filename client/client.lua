@@ -167,10 +167,6 @@ end
 
 local function BuildBlipLabel(data)
     local name = data.playerName or 'Unknown'
-    if data.callsign and data.callsign ~= '' then
-        return ('[%s] %s'):format(data.callsign, name)
-    end
-
     return name
 end
 
@@ -319,12 +315,6 @@ local function RegisterTrackerCommands()
         end, false)
     end
 
-    if Config.Commands and Config.Commands.callsign and Config.Commands.callsign ~= '' then
-        RegisterCommand(Config.Commands.callsign, function(_, args)
-            local callsign = table.concat(args, ' ')
-            TriggerServerEvent('gps_tracker:setCallsign', callsign)
-        end, false)
-    end
 end
 
 Citizen.CreateThread(function()
