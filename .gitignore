@@ -1,0 +1,86 @@
+# GPS Tracker - Git Ignore File
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor Files and Directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Logs
+*.log
+logs/
+
+# Backup Files
+*.bak
+*.backup
+*.old
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Lock Files
+*.lock
+
+# Node Modules (if using any JS tools)
+node_modules/
+
+# Package Manager Files
+package-lock.json
+yarn.lock
+
+# Build Artifacts
+dist/
+build/
+
+# Test Files
+test/
+tests/
+*.test.lua
+
+# Documentation Drafts
+DRAFT_*
+TODO_*
+FIXME_*
+
+# Local Configuration (if you have local config files)
+config.local.lua
+config.local.json
+
+# Database Files (if any)
+*.db
+*.sqlite
+*.sqlite3
+
+# Sensitive Information
+*.env
+.env
+secrets/
+credentials/
+
+# Archive Files
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+
+# Debug Files
+debug/
+debug.log
+*.debug
