@@ -108,6 +108,37 @@ local function IsPlayerCuffed()
     return false
 end
 
+local function IsTrackerDisableRestricted()
+    return Config.TrackerDisable and Config.TrackerDisable.restricted == true
+end
+
+local function IsTrackerDisableOfficer()
+    if not PlayerData.job or not PlayerData.job.name then
+        return false
+    end
+
+    local allowedJobs = (Config.TrackerDisable and Config.TrackerDisable.officerJobs) or {}
+    for _, jobName in ipairs(allowedJobs) do
+        if jobName == PlayerData.job.name then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function CanManuallyDisableTracker()
+    if not IsTrackerDisableRestricted() then
+        return true
+    end
+
+    if Config.TrackerDisable and Config.TrackerDisable.allowWhenCuffed and IsPlayerCuffed() then
+        return true
+    end
+
+    return IsTrackerDisableOfficer()
+end
+
 local function IsJobConfigured(jobName)
     if not jobName then return false end
 
@@ -335,6 +366,11 @@ end
 
 function DisableTracker(isManualAction)
     if isManualAction == true then
+        if not CanManuallyDisableTracker() then
+            ShowNotification('tracker_disable_restricted')
+            return false
+        end
+
         AutoEnableSuppressed = true
     end
 
@@ -401,23 +437,33 @@ local function CreatePanicBlip(data)
     end
 
     local blipConfig = (Config.Panic and Config.Panic.blip) or {}
-    local blip = AddBlipForCoord(data.coords.x, data.coords.y, data.coords.z)
     local key = string.format('%s:%s', tostring(data.serverId or 'x'), tostring(GetGameTimer()))
 
-    SetBlipSprite(blip, blipConfig.sprite or 161)
-    SetBlipColour(blip, ResolveBlipColor(blipConfig.color or 1))
-    SetBlipScale(blip, blipConfig.scale or 1.4)
-    SetBlipFlashes(blip, true)
-    SetBlipAsShortRange(blip, false)
+    local panicBlip = AddBlipForCoord(data.coords.x, data.coords.y, data.coords.z)
+    SetBlipSprite(panicBlip, blipConfig.sprite or 161)
+    SetBlipColour(panicBlip, ResolveBlipColor(blipConfig.color or 1))
+    SetBlipScale(panicBlip, blipConfig.scale or 1.9)
+    SetBlipFlashes(panicBlip, true)
+    SetBlipAsShortRange(panicBlip, false)
+    SetBlipFlashInterval(panicBlip, 250)
 
     BeginTextCommandSetBlipName('STRING')
     AddTextComponentString((blipConfig.label or 'PANIC') .. ' - ' .. (data.playerName or 'Unit'))
-    EndTextCommandSetBlipName(blip)
+    EndTextCommandSetBlipName(panicBlip)
 
-    PanicBlips[key] = blip
+    PanicBlips[key] = panicBlip
+
+    if blipConfig.showRadius ~= false then
+        local radius = tonumber(blipConfig.radius) or 90.0
+        local radiusBlip = AddBlipForRadius(data.coords.x, data.coords.y, data.coords.z, radius)
+        SetBlipColour(radiusBlip, ResolveBlipColor(blipConfig.radiusColor or blipConfig.color or 1))
+        SetBlipAlpha(radiusBlip, tonumber(blipConfig.radiusAlpha) or 120)
+        PanicBlips[key .. ':radius'] = radiusBlip
+    end
 
     SetTimeout((Config.Panic and Config.Panic.blipDurationMs) or 15000, function()
         RemovePanicBlip(key)
+        RemovePanicBlip(key .. ':radius')
     end)
 end
 
@@ -432,17 +478,32 @@ local function PlayPanicSoundForDuration(durationMs)
     local audioName = soundConfig.audioName or '5_SEC_WARNING'
     local audioRef = soundConfig.audioRef or 'HUD_MINI_GAME_SOUNDSET'
     local totalDuration = tonumber(durationMs) or (panicConfig.blipDurationMs or 15000)
-    local repeatIntervalMs = tonumber(soundConfig.repeatIntervalMs) or 1000
+    local repeatIntervalMs = tonumber(soundConfig.repeatIntervalMs) or 850
+    local layeredPlays = tonumber(soundConfig.layeredPlays) or 2
+    local layeredDelayMs = tonumber(soundConfig.layeredDelayMs) or 80
 
     if repeatIntervalMs < 250 then
         repeatIntervalMs = 250
+    end
+
+    if layeredPlays < 1 then
+        layeredPlays = 1
+    end
+
+    if layeredDelayMs < 0 then
+        layeredDelayMs = 0
     end
 
     CreateThread(function()
         local startedAt = GetGameTimer()
 
         while (GetGameTimer() - startedAt) < totalDuration do
-            PlaySoundFrontend(-1, audioName, audioRef, true)
+            for _ = 1, layeredPlays do
+                PlaySoundFrontend(-1, audioName, audioRef, true)
+                if layeredDelayMs > 0 then
+                    Wait(layeredDelayMs)
+                end
+            end
             Wait(repeatIntervalMs)
         end
     end)

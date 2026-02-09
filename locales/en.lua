@@ -13,6 +13,7 @@ Locales['en'] = {
     ['panic_sent'] = 'Panic signal sent',
     ['panic_received'] = 'PANIC: Officer needs immediate assistance',
     ['panic_cooldown'] = 'Panic button is on cooldown',
+    ['tracker_disable_restricted'] = 'Tracker can only be disabled by officers, unless you are cuffed',
 }
 
 return Locales

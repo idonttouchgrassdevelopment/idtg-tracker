@@ -102,14 +102,28 @@ Config.Panic = {
         enabled = true,
         audioName = '5_SEC_WARNING',
         audioRef = 'HUD_MINI_GAME_SOUNDSET',
-        repeatIntervalMs = 1000
+        repeatIntervalMs = 850,
+        layeredPlays = 2,
+        layeredDelayMs = 80
     },
     blip = {
         sprite = 161,
         color = 1,
-        scale = 1.4,
-        label = 'PANIC'
+        scale = 1.9,
+        label = 'PANIC',
+        showRadius = true,
+        radius = 90.0,
+        radiusColor = 1,
+        radiusAlpha = 120
     }
+}
+
+-- Restrict manual tracker disabling so only officers can disable it,
+-- unless the player is currently cuffed.
+Config.TrackerDisable = {
+    restricted = true,
+    allowWhenCuffed = true,
+    officerJobs = {'police', 'sheriff', 'sasp', 'bcso', 'fib'}
 }
 
 -- Animation settings used when toggling the tracker and sending panic alerts
@@ -357,6 +371,7 @@ Config.Notifications = {
     ['panic_status_enabled'] = 'Panic button is enabled',
     ['panic_status_disabled'] = 'Panic button is disabled',
     ['panic_failed'] = 'Unable to send panic signal right now',
+    ['tracker_disable_restricted'] = 'Tracker can only be disabled by officers, unless you are cuffed',
 }
 
 -- =============================================================================

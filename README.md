@@ -180,6 +180,7 @@ By default, the following commands are available (configure in `config.lua` unde
 
 - `/enabletracker` - Manually enable the GPS tracker
 - `/disabletracker` - Manually disable the GPS tracker
+  - By default, only configured officer jobs can manually disable tracker, unless the player is cuffed (`Config.TrackerDisable`).
 - `/trackerstatus` - Check current tracker status
 - `/panic` - Send a panic alert to authorized units
 - `/panicstatus` - Check whether panic button usage is enabled
@@ -540,3 +541,12 @@ You can change item names in `Config.OxInventoryItems`, but if you change export
 - `Config.Animations.trackerToggle` and `Config.Animations.panic` let you fully configure animations and duration.
 - `Config.Panic` controls panic cooldown, panic blip style, and how long panic blips stay visible.
 - `Config.CuffChecks` blocks tracker/panic while the player is cuffed using state bag keys and optional exported checks.
+
+
+### Panic System Tuning
+
+You can make panic alerts more noticeable by increasing sound layering and panic blip radius in `Config.Panic`:
+
+- `Config.Panic.sound.layeredPlays` and `layeredDelayMs` for louder repeating alert stacks
+- `Config.Panic.blip.scale` for a larger panic icon
+- `Config.Panic.blip.showRadius`, `radius`, and `radiusAlpha` for a visible nearby panic area

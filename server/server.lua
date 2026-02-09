@@ -250,6 +250,32 @@ local function IsOfficerJob(jobName)
     return false
 end
 
+
+local function CanManuallyDisableTracker(playerId)
+    local disableConfig = Config.TrackerDisable or {}
+
+    if disableConfig.restricted ~= true then
+        return true
+    end
+
+    if disableConfig.allowWhenCuffed and IsPlayerCuffed(playerId) then
+        return true
+    end
+
+    local playerData = Players[playerId]
+    local playerJobName = playerData and playerData.job and playerData.job.name
+    if not playerJobName then
+        return false
+    end
+
+    for _, officerJob in ipairs(disableConfig.officerJobs or {}) do
+        if officerJob == playerJobName then
+            return true
+        end
+    end
+
+    return false
+end
 local function GetPlayersInRadius(centerCoords, radius)
     local targets = {}
 
@@ -329,6 +355,10 @@ end)
 RegisterNetEvent('gps_tracker:disableTracker', function()
     local playerId = source
     if not EnsurePlayerInitialized(playerId) then return end
+    if not CanManuallyDisableTracker(playerId) then
+        TriggerClientEvent('gps_tracker:panicDenied', playerId, 'tracker_disable_restricted')
+        return
+    end
 
     Players[playerId].trackerEnabled = false
     TriggerClientEvent('gps_tracker:playerDisconnected', -1, playerId)
