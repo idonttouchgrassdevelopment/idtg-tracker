@@ -11,6 +11,7 @@ local ESX = nil
 local QBCore = nil
 local LastPanicAt = 0
 local PanicEnabled = true
+local AutoEnableSuppressed = false
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -226,10 +227,20 @@ function CheckJobAndEnableTracker()
 
     local canUse = CanUseTracker()
 
-    if canUse and not TrackerEnabled then
-        EnableTracker(false)
-    elseif not canUse and TrackerEnabled then
-        DisableTracker()
+    if not canUse then
+        AutoEnableSuppressed = false
+        if TrackerEnabled then
+            DisableTracker(false)
+        end
+        return
+    end
+
+    if AutoEnableSuppressed then
+        return
+    end
+
+    if not TrackerEnabled then
+        EnableTracker(false, false)
     end
 end
 
@@ -295,7 +306,7 @@ local function RemoveBlipByServerId(serverId)
     PlayerBlips[serverId] = nil
 end
 
-function EnableTracker(playAnimation)
+function EnableTracker(playAnimation, isManualAction)
     local canUse, reason = CanUseTracker()
 
     if not canUse then
@@ -304,6 +315,10 @@ function EnableTracker(playAnimation)
     end
 
     if TrackerEnabled then return true end
+
+    if isManualAction == true then
+        AutoEnableSuppressed = false
+    end
 
     if playAnimation ~= false then
         PlayConfigAnimation(Config.Animations and Config.Animations.trackerToggle)
@@ -318,7 +333,11 @@ function EnableTracker(playAnimation)
     return true
 end
 
-function DisableTracker()
+function DisableTracker(isManualAction)
+    if isManualAction == true then
+        AutoEnableSuppressed = true
+    end
+
     if not TrackerEnabled then return true end
 
     TrackerEnabled = false
@@ -332,10 +351,10 @@ end
 
 function SetTrackerStatus(state)
     if state then
-        return EnableTracker(true)
+        return EnableTracker(true, true)
     end
 
-    return DisableTracker()
+    return DisableTracker(true)
 end
 
 function GetTrackerStatus()
@@ -346,7 +365,7 @@ function StartUpdateLoop()
     Citizen.CreateThread(function()
         while TrackerEnabled do
             if IsPlayerCuffed() then
-                DisableTracker()
+                DisableTracker(false)
                 ShowNotification('cannot_use_cuffed')
                 break
             end
@@ -487,9 +506,9 @@ end
 
 exports('UseTrackerItem', function()
     if TrackerEnabled then
-        DisableTracker()
+        DisableTracker(true)
     else
-        EnableTracker(true)
+        EnableTracker(true, true)
     end
 end)
 
@@ -545,9 +564,9 @@ end)
 
 RegisterNetEvent('gps_tracker:useTrackerItem', function()
     if TrackerEnabled then
-        DisableTracker()
+        DisableTracker(true)
     else
-        EnableTracker(true)
+        EnableTracker(true, true)
     end
 end)
 
@@ -586,13 +605,13 @@ local function RegisterTrackerCommands()
 
     if IsCommandEnabled(Config.Commands.enable) then
         RegisterCommand(GetCommandName(Config.Commands.enable), function()
-            EnableTracker(true)
+            EnableTracker(true, true)
         end, false)
     end
 
     if IsCommandEnabled(Config.Commands.disable) then
         RegisterCommand(GetCommandName(Config.Commands.disable), function()
-            DisableTracker()
+            DisableTracker(true)
         end, false)
     end
 
@@ -625,9 +644,9 @@ local function RegisterTrackerKeybinds()
     if toggleConfig and toggleConfig.enabled ~= false and toggleConfig.command and toggleConfig.command ~= '' then
         RegisterCommand(toggleConfig.command, function()
             if TrackerEnabled then
-                DisableTracker()
+                DisableTracker(true)
             else
-                EnableTracker(true)
+                EnableTracker(true, true)
             end
         end, false)
 
