@@ -493,29 +493,95 @@ RegisterNetEvent('gps_tracker:usePanicItem', function()
     UsePanic()
 end)
 
+local function GetCommandName(commandConfig)
+    if type(commandConfig) == 'table' then
+        return commandConfig.name
+    end
+
+    if type(commandConfig) == 'string' then
+        return commandConfig
+    end
+
+    return nil
+end
+
+local function IsCommandEnabled(commandConfig)
+    if type(commandConfig) == 'table' then
+        if commandConfig.enabled == false then
+            return false
+        end
+
+        return commandConfig.name and commandConfig.name ~= ''
+    end
+
+    return type(commandConfig) == 'string' and commandConfig ~= ''
+end
+
 local function RegisterTrackerCommands()
-    if Config.Commands and Config.Commands.enable and Config.Commands.enable ~= '' then
-        RegisterCommand(Config.Commands.enable, function()
+    if not Config.Commands or Config.Commands.enabled == false then
+        return
+    end
+
+    if IsCommandEnabled(Config.Commands.enable) then
+        RegisterCommand(GetCommandName(Config.Commands.enable), function()
             EnableTracker(true)
         end, false)
     end
 
-    if Config.Commands and Config.Commands.disable and Config.Commands.disable ~= '' then
-        RegisterCommand(Config.Commands.disable, function()
+    if IsCommandEnabled(Config.Commands.disable) then
+        RegisterCommand(GetCommandName(Config.Commands.disable), function()
             DisableTracker()
         end, false)
     end
 
-    if Config.Commands and Config.Commands.status and Config.Commands.status ~= '' then
-        RegisterCommand(Config.Commands.status, function()
+    if IsCommandEnabled(Config.Commands.status) then
+        RegisterCommand(GetCommandName(Config.Commands.status), function()
             ShowNotification(TrackerEnabled and 'status_enabled' or 'status_disabled')
         end, false)
     end
 
-    if Config.Commands and Config.Commands.panic and Config.Commands.panic ~= '' then
-        RegisterCommand(Config.Commands.panic, function()
+    if IsCommandEnabled(Config.Commands.panic) then
+        RegisterCommand(GetCommandName(Config.Commands.panic), function()
             UsePanic()
         end, false)
+    end
+end
+
+local function RegisterTrackerKeybinds()
+    if not Config.Keybinds or Config.Keybinds.enabled == false then
+        return
+    end
+
+    local toggleConfig = Config.Keybinds.toggleTracker
+    if toggleConfig and toggleConfig.enabled ~= false and toggleConfig.command and toggleConfig.command ~= '' then
+        RegisterCommand(toggleConfig.command, function()
+            if TrackerEnabled then
+                DisableTracker()
+            else
+                EnableTracker(true)
+            end
+        end, false)
+
+        RegisterKeyMapping(
+            toggleConfig.command,
+            toggleConfig.description or 'Toggle GPS tracker',
+            toggleConfig.defaultMapper or 'keyboard',
+            toggleConfig.defaultParameter or 'F6'
+        )
+    end
+
+    local panicConfig = Config.Keybinds.panic
+    if panicConfig and panicConfig.enabled ~= false and panicConfig.command and panicConfig.command ~= '' then
+        RegisterCommand(panicConfig.command, function()
+            UsePanic()
+        end, false)
+
+        RegisterKeyMapping(
+            panicConfig.command,
+            panicConfig.description or 'Send GPS panic alert',
+            panicConfig.defaultMapper or 'keyboard',
+            panicConfig.defaultParameter or 'F7'
+        )
     end
 end
 
@@ -537,6 +603,7 @@ Citizen.CreateThread(function()
     end
 
     RegisterTrackerCommands()
+    RegisterTrackerKeybinds()
     exports('GetTrackerStatus', GetTrackerStatus)
 
 
