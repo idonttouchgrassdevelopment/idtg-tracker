@@ -176,12 +176,23 @@ Config.Performance = {
 
 ## Available Commands
 
-By default, the following commands are available (configure in `config.lua`):
+By default, the following commands are available (configure in `config.lua` under `Config.Commands`):
 
 - `/enabletracker` - Manually enable the GPS tracker
 - `/disabletracker` - Manually disable the GPS tracker
 - `/trackerstatus` - Check current tracker status
 - `/panic` - Send a panic alert to authorized units
+
+You can disable all commands with `Config.Commands.enabled = false` or disable each command individually with `enabled = false`.
+
+## Keybinds
+
+Optional keybinds are available in `Config.Keybinds`:
+
+- `toggleTracker` (default: `F6`)
+- `panic` (default: `F7`)
+
+Set `Config.Keybinds.enabled = false` to disable keybind registration globally, or set individual keybind `enabled = false`.
 
 ## Framework-Specific Notes
 

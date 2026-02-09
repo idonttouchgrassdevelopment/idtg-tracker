@@ -39,7 +39,7 @@ Config.AutoDisableOffDuty = true
 
 
 -- Allow all jobs to use the tracker/panic system, even if not explicitly listed in Config.Jobs
-Config.AllowAllJobs = true
+Config.AllowAllJobs = false
 
 -- Fallback blip used when Config.AllowAllJobs is enabled and job is not configured
 Config.DefaultJob = {
@@ -354,10 +354,50 @@ Config.Notifications = {
 -- =============================================================================
 
 Config.Commands = {
-    enable = 'enabletracker',    -- Command to manually enable tracker
-    disable = 'disabletracker',  -- Command to manually disable tracker
-    status = 'trackerstatus',    -- Command to check tracker status
-    panic = 'panic',             -- Command to trigger a panic alert
+    enabled = true,              -- Master toggle for all tracker commands
+    enable = {
+        enabled = true,
+        name = 'enabletracker',  -- Command to manually enable tracker
+    },
+    disable = {
+        enabled = true,
+        name = 'disabletracker', -- Command to manually disable tracker
+    },
+    status = {
+        enabled = true,
+        name = 'trackerstatus',  -- Command to check tracker status
+    },
+    panic = {
+        enabled = true,
+        name = 'panic',          -- Command to trigger a panic alert
+    },
+}
+
+-- =============================================================================
+-- KEYBINDS
+-- =============================================================================
+-- Register optional keybinds so users can control tracker/panic without commands.
+-- Set enabled = false to disable all keybind registrations.
+-- defaultMapper examples: keyboard, pad
+-- defaultParameter examples: F6, F7, LMENU
+-- =============================================================================
+
+Config.Keybinds = {
+    enabled = true,
+    toggleTracker = {
+        enabled = true,
+        command = 'gpstracker_toggle',
+        description = 'Toggle GPS tracker',
+        defaultMapper = 'keyboard',
+        defaultParameter = 'F6',
+    },
+    panic = {
+        enabled = true,
+        command = 'gpstracker_panic',
+        description = 'Send GPS panic alert',
+        defaultMapper = 'keyboard',
+        defaultParameter = 'F7',
+    }
 }
 
 -- =============================================================================
