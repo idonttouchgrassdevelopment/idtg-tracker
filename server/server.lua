@@ -98,6 +98,29 @@ local function IsPlayerCuffed(playerId)
         end
     end
 
+    if Config.CuffChecks and Config.CuffChecks.exports then
+        for _, exportData in ipairs(Config.CuffChecks.exports) do
+            local resource = exportData.resource
+            local exportName = exportData.exportName
+
+            if resource and exportName and GetResourceState(resource) == 'started' then
+                local ok, result = pcall(function()
+                    return exports[resource][exportName](playerId)
+                end)
+
+                if not ok then
+                    ok, result = pcall(function()
+                        return exports[resource][exportName]()
+                    end)
+                end
+
+                if ok and result then
+                    return true
+                end
+            end
+        end
+    end
+
     return false
 end
 
@@ -133,7 +156,8 @@ local function InitializePlayer(playerId, playerData)
         lastUpdate = 0,
         isOnline = true,
         trackerEnabled = false,
-        panicEnabled = true
+        panicEnabled = true,
+        panicLastAt = 0
     }
 end
 
@@ -207,6 +231,46 @@ local function InitializeQBCore()
     RegisterNetEvent('QBCore:Server:OnJobUpdate', function(playerId, job)
         UpdatePlayerJob(playerId, job)
     end)
+end
+
+local function IsOfficerJob(jobName)
+    local panicConfig = Config.Panic or {}
+    local officerJobs = panicConfig.officerJobs or {}
+
+    if not jobName then
+        return false
+    end
+
+    for _, officerJob in ipairs(officerJobs) do
+        if officerJob == jobName then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function GetPlayersInRadius(centerCoords, radius)
+    local targets = {}
+
+    if not centerCoords or not radius or radius <= 0 then
+        return targets
+    end
+
+    for playerId, playerData in pairs(Players) do
+        if playerData.isOnline and playerData.coords then
+            local dx = (playerData.coords.x or 0.0) - centerCoords.x
+            local dy = (playerData.coords.y or 0.0) - centerCoords.y
+            local dz = (playerData.coords.z or 0.0) - centerCoords.z
+            local distance = math.sqrt((dx * dx) + (dy * dy) + (dz * dz))
+
+            if distance <= radius then
+                targets[playerId] = true
+            end
+        end
+    end
+
+    return targets
 end
 
 local function GetNearbyPlayers(requesterId)
@@ -293,19 +357,38 @@ end)
 RegisterNetEvent('gps_tracker:panic', function(payload)
     local playerId = source
     if not EnsurePlayerInitialized(playerId) then return end
-    if IsPlayerCuffed(playerId) then return end
+    if IsPlayerCuffed(playerId) then
+        TriggerClientEvent('gps_tracker:panicDenied', playerId, 'cannot_use_cuffed')
+        return
+    end
     if not (Config.Panic and Config.Panic.enabled) then return end
 
     local sender = Players[playerId]
-    if sender and sender.panicEnabled == false then return end
+    if sender and sender.panicEnabled == false then
+        TriggerClientEvent('gps_tracker:panicDenied', playerId, 'panic_disabled')
+        return
+    end
 
     local senderJob = sender and sender.job
     local senderConfigured, senderConfigJobName = IsJobConfigured(senderJob and senderJob.name)
-    if not senderConfigured then return end
+    if not senderConfigured then
+        TriggerClientEvent('gps_tracker:panicDenied', playerId, 'not_authorized')
+        return
+    end
 
-    local senderJobConfig = GetJobConfig(senderConfigJobName)
+    local cooldownMs = (Config.Panic and Config.Panic.cooldownMs) or 45000
+    local now = GetGameTimer()
+    if (now - (sender.panicLastAt or 0)) < cooldownMs then
+        TriggerClientEvent('gps_tracker:panicDenied', playerId, 'panic_cooldown')
+        return
+    end
+    sender.panicLastAt = now
+
     local coords = payload and payload.coords or sender.coords
-    if not coords then return end
+    if not coords then
+        TriggerClientEvent('gps_tracker:panicDenied', playerId, 'panic_failed')
+        return
+    end
 
     local panicData = {
         serverId = playerId,
@@ -317,10 +400,27 @@ RegisterNetEvent('gps_tracker:panic', function(payload)
         }
     }
 
+    local panicConfig = Config.Panic or {}
+    local nearbyAudibleRadius = tonumber(panicConfig.nearbyAudibleRadius) or 80.0
+    local nearbyTargets = GetPlayersInRadius(panicData.coords, nearbyAudibleRadius)
+
+    TriggerClientEvent('gps_tracker:panicSent', playerId, panicData)
+
     for targetId, targetData in pairs(Players) do
         if targetData.isOnline and targetId ~= playerId then
-            local targetConfigured, targetConfigJobName = IsJobConfigured(targetData.job and targetData.job.name)
-            if targetConfigured and CanSeePlayer(GetJobConfig(targetConfigJobName), senderConfigJobName) then
+            local targetJobName = targetData.job and targetData.job.name
+            local targetConfigured, targetConfigJobName = IsJobConfigured(targetJobName)
+            local shouldReceive = false
+
+            if IsOfficerJob(targetJobName) then
+                shouldReceive = true
+            elseif targetConfigured and CanSeePlayer(GetJobConfig(targetConfigJobName), senderConfigJobName) then
+                shouldReceive = true
+            elseif nearbyTargets[targetId] and not IsOfficerJob(targetJobName) then
+                shouldReceive = true
+            end
+
+            if shouldReceive then
                 TriggerClientEvent('gps_tracker:receivePanic', targetId, panicData)
             end
         end

@@ -96,6 +96,13 @@ Config.Panic = {
     enabled = true,
     cooldownMs = 45000,
     blipDurationMs = 15000,
+    nearbyAudibleRadius = 80.0,
+    officerJobs = {'police', 'sheriff', 'sasp', 'bcso', 'fib'},
+    sound = {
+        enabled = true,
+        audioName = '5_SEC_WARNING',
+        audioRef = 'HUD_MINI_GAME_SOUNDSET'
+    },
     blip = {
         sprite = 161,
         color = 1,
@@ -348,6 +355,7 @@ Config.Notifications = {
     ['panic_disabled'] = 'Panic button disabled',
     ['panic_status_enabled'] = 'Panic button is enabled',
     ['panic_status_disabled'] = 'Panic button is disabled',
+    ['panic_failed'] = 'Unable to send panic signal right now',
 }
 
 -- =============================================================================

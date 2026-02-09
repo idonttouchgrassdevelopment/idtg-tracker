@@ -402,6 +402,20 @@ local function CreatePanicBlip(data)
     end)
 end
 
+local function PlayPanicSound()
+    local panicConfig = Config.Panic or {}
+    local soundConfig = panicConfig.sound or {}
+
+    if soundConfig.enabled == false then
+        return
+    end
+
+    local audioName = soundConfig.audioName or '5_SEC_WARNING'
+    local audioRef = soundConfig.audioRef or 'HUD_MINI_GAME_SOUNDSET'
+
+    PlaySoundFrontend(-1, audioName, audioRef, true)
+end
+
 local function SetPanicEnabled(state)
     PanicEnabled = state == true
     TriggerServerEvent('gps_tracker:setPanicState', PanicEnabled)
@@ -451,8 +465,6 @@ local function UsePanic()
     TriggerServerEvent('gps_tracker:panic', {
         coords = { x = coords.x, y = coords.y, z = coords.z }
     })
-
-    ShowNotification('panic_sent')
 end
 
 
@@ -499,8 +511,18 @@ RegisterNetEvent('gps_tracker:playerDisconnected', function(serverId)
     RemoveBlipByServerId(serverId)
 end)
 
+RegisterNetEvent('gps_tracker:panicSent', function()
+    PlayPanicSound()
+    ShowNotification('panic_sent')
+end)
+
+RegisterNetEvent('gps_tracker:panicDenied', function(reason)
+    ShowNotification(reason or 'panic_failed')
+end)
+
 RegisterNetEvent('gps_tracker:receivePanic', function(data)
     CreatePanicBlip(data)
+    PlayPanicSound()
     ShowNotification('panic_received')
 end)
 
