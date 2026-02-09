@@ -344,6 +344,10 @@ Config.Notifications = {
     ['panic_sent'] = 'Panic signal sent',
     ['panic_received'] = 'PANIC: Officer needs immediate assistance',
     ['panic_cooldown'] = 'Panic button is on cooldown',
+    ['panic_enabled'] = 'Panic button enabled',
+    ['panic_disabled'] = 'Panic button disabled',
+    ['panic_status_enabled'] = 'Panic button is enabled',
+    ['panic_status_disabled'] = 'Panic button is disabled',
 }
 
 -- =============================================================================
@@ -371,6 +375,18 @@ Config.Commands = {
         enabled = true,
         name = 'panic',          -- Command to trigger a panic alert
     },
+    panicEnable = {
+        enabled = true,
+        name = 'enablepanic',    -- Enable panic button usage
+    },
+    panicDisable = {
+        enabled = true,
+        name = 'disablepanic',   -- Disable panic button usage
+    },
+    panicStatus = {
+        enabled = true,
+        name = 'panicstatus',    -- Check panic button state
+    },
 }
 
 -- =============================================================================
@@ -397,6 +413,13 @@ Config.Keybinds = {
         description = 'Send GPS panic alert',
         defaultMapper = 'keyboard',
         defaultParameter = 'F7',
+    },
+    togglePanic = {
+        enabled = true,
+        command = 'gpstracker_togglepanic',
+        description = 'Toggle GPS panic button',
+        defaultMapper = 'keyboard',
+        defaultParameter = 'F8',
     }
 }
 

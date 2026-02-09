@@ -10,6 +10,7 @@ local Framework = nil
 local ESX = nil
 local QBCore = nil
 local LastPanicAt = 0
+local PanicEnabled = true
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -401,8 +402,27 @@ local function CreatePanicBlip(data)
     end)
 end
 
+local function SetPanicEnabled(state)
+    PanicEnabled = state == true
+    ShowNotification(PanicEnabled and 'panic_enabled' or 'panic_disabled')
+    return PanicEnabled
+end
+
+local function TogglePanicEnabled()
+    return SetPanicEnabled(not PanicEnabled)
+end
+
+local function GetPanicEnabled()
+    return PanicEnabled
+end
+
 local function UsePanic()
     if not Config.Panic or not Config.Panic.enabled then
+        return
+    end
+
+    if not PanicEnabled then
+        ShowNotification('panic_disabled')
         return
     end
 
@@ -448,6 +468,8 @@ exports('UsePanicItem', function()
 end)
 
 exports('SetTrackerStatus', SetTrackerStatus)
+exports('SetPanicStatus', SetPanicEnabled)
+exports('GetPanicStatus', GetPanicEnabled)
 
 RegisterNetEvent('gps_tracker:updateBlips', function(players)
     if not TrackerEnabled then return end
@@ -545,6 +567,24 @@ local function RegisterTrackerCommands()
             UsePanic()
         end, false)
     end
+
+    if IsCommandEnabled(Config.Commands.panicEnable) then
+        RegisterCommand(GetCommandName(Config.Commands.panicEnable), function()
+            SetPanicEnabled(true)
+        end, false)
+    end
+
+    if IsCommandEnabled(Config.Commands.panicDisable) then
+        RegisterCommand(GetCommandName(Config.Commands.panicDisable), function()
+            SetPanicEnabled(false)
+        end, false)
+    end
+
+    if IsCommandEnabled(Config.Commands.panicStatus) then
+        RegisterCommand(GetCommandName(Config.Commands.panicStatus), function()
+            ShowNotification(PanicEnabled and 'panic_status_enabled' or 'panic_status_disabled')
+        end, false)
+    end
 end
 
 local function RegisterTrackerKeybinds()
@@ -581,6 +621,20 @@ local function RegisterTrackerKeybinds()
             panicConfig.description or 'Send GPS panic alert',
             panicConfig.defaultMapper or 'keyboard',
             panicConfig.defaultParameter or 'F7'
+        )
+    end
+
+    local panicToggleConfig = Config.Keybinds.togglePanic
+    if panicToggleConfig and panicToggleConfig.enabled ~= false and panicToggleConfig.command and panicToggleConfig.command ~= '' then
+        RegisterCommand(panicToggleConfig.command, function()
+            TogglePanicEnabled()
+        end, false)
+
+        RegisterKeyMapping(
+            panicToggleConfig.command,
+            panicToggleConfig.description or 'Toggle GPS panic button',
+            panicToggleConfig.defaultMapper or 'keyboard',
+            panicToggleConfig.defaultParameter or 'F8'
         )
     end
 end
