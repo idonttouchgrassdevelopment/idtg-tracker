@@ -94,7 +94,7 @@ Config.OxInventoryItems = {
 -- Panic system settings
 Config.Panic = {
     enabled = true,
-    cooldownMs = 15000,
+    cooldownMs = 45000,
     blipDurationMs = 15000,
     blip = {
         sprite = 161,

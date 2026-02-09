@@ -439,7 +439,7 @@ local function UsePanic()
     end
 
     local now = GetGameTimer()
-    if now - LastPanicAt < ((Config.Panic and Config.Panic.cooldownMs) or 15000) then
+    if now - LastPanicAt < ((Config.Panic and Config.Panic.cooldownMs) or 45000) then
         ShowNotification('panic_cooldown')
         return
     end
