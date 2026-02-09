@@ -132,7 +132,8 @@ local function InitializePlayer(playerId, playerData)
         coords = nil,
         lastUpdate = 0,
         isOnline = true,
-        trackerEnabled = false
+        trackerEnabled = false,
+        panicEnabled = true
     }
 end
 
@@ -281,6 +282,14 @@ RegisterNetEvent('gps_tracker:requestPlayerData', function()
     TriggerClientEvent('gps_tracker:updateBlips', playerId, GetNearbyPlayers(playerId))
 end)
 
+
+RegisterNetEvent('gps_tracker:setPanicState', function(state)
+    local playerId = source
+    if not EnsurePlayerInitialized(playerId) then return end
+
+    Players[playerId].panicEnabled = state == true
+end)
+
 RegisterNetEvent('gps_tracker:panic', function(payload)
     local playerId = source
     if not EnsurePlayerInitialized(playerId) then return end
@@ -288,6 +297,8 @@ RegisterNetEvent('gps_tracker:panic', function(payload)
     if not (Config.Panic and Config.Panic.enabled) then return end
 
     local sender = Players[playerId]
+    if sender and sender.panicEnabled == false then return end
+
     local senderJob = sender and sender.job
     local senderConfigured, senderConfigJobName = IsJobConfigured(senderJob and senderJob.name)
     if not senderConfigured then return end

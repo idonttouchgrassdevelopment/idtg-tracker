@@ -182,6 +182,7 @@ By default, the following commands are available (configure in `config.lua` unde
 - `/disabletracker` - Manually disable the GPS tracker
 - `/trackerstatus` - Check current tracker status
 - `/panic` - Send a panic alert to authorized units
+- `/panicstatus` - Check whether panic button usage is enabled
 
 You can disable all commands with `Config.Commands.enabled = false` or disable each command individually with `enabled = false`.
 
@@ -191,6 +192,7 @@ Optional keybinds are available in `Config.Keybinds`:
 
 - `toggleTracker` (default: `F6`)
 - `panic` (default: `F7`)
+- `togglePanic` (default: `F8`)
 
 Set `Config.Keybinds.enabled = false` to disable keybind registration globally, or set individual keybind `enabled = false`.
 

@@ -10,6 +10,7 @@ local Framework = nil
 local ESX = nil
 local QBCore = nil
 local LastPanicAt = 0
+local PanicEnabled = true
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -396,13 +397,33 @@ local function CreatePanicBlip(data)
 
     PanicBlips[key] = blip
 
-    SetTimeout((Config.Panic and Config.Panic.blipDurationMs) or 30000, function()
+    SetTimeout((Config.Panic and Config.Panic.blipDurationMs) or 15000, function()
         RemovePanicBlip(key)
     end)
 end
 
+local function SetPanicEnabled(state)
+    PanicEnabled = state == true
+    TriggerServerEvent('gps_tracker:setPanicState', PanicEnabled)
+    ShowNotification(PanicEnabled and 'panic_enabled' or 'panic_disabled')
+    return PanicEnabled
+end
+
+local function TogglePanicEnabled()
+    return SetPanicEnabled(not PanicEnabled)
+end
+
+local function GetPanicEnabled()
+    return PanicEnabled
+end
+
 local function UsePanic()
     if not Config.Panic or not Config.Panic.enabled then
+        return
+    end
+
+    if not PanicEnabled then
+        ShowNotification('panic_disabled')
         return
     end
 
@@ -418,7 +439,7 @@ local function UsePanic()
     end
 
     local now = GetGameTimer()
-    if now - LastPanicAt < ((Config.Panic and Config.Panic.cooldownMs) or 15000) then
+    if now - LastPanicAt < ((Config.Panic and Config.Panic.cooldownMs) or 45000) then
         ShowNotification('panic_cooldown')
         return
     end
@@ -448,6 +469,8 @@ exports('UsePanicItem', function()
 end)
 
 exports('SetTrackerStatus', SetTrackerStatus)
+exports('SetPanicStatus', SetPanicEnabled)
+exports('GetPanicStatus', GetPanicEnabled)
 
 RegisterNetEvent('gps_tracker:updateBlips', function(players)
     if not TrackerEnabled then return end
@@ -545,6 +568,13 @@ local function RegisterTrackerCommands()
             UsePanic()
         end, false)
     end
+
+
+    if IsCommandEnabled(Config.Commands.panicStatus) then
+        RegisterCommand(GetCommandName(Config.Commands.panicStatus), function()
+            ShowNotification(PanicEnabled and 'panic_status_enabled' or 'panic_status_disabled')
+        end, false)
+    end
 end
 
 local function RegisterTrackerKeybinds()
@@ -583,6 +613,20 @@ local function RegisterTrackerKeybinds()
             panicConfig.defaultParameter or 'F7'
         )
     end
+
+    local panicToggleConfig = Config.Keybinds.togglePanic
+    if panicToggleConfig and panicToggleConfig.enabled ~= false and panicToggleConfig.command and panicToggleConfig.command ~= '' then
+        RegisterCommand(panicToggleConfig.command, function()
+            TogglePanicEnabled()
+        end, false)
+
+        RegisterKeyMapping(
+            panicToggleConfig.command,
+            panicToggleConfig.description or 'Toggle GPS panic button',
+            panicToggleConfig.defaultMapper or 'keyboard',
+            panicToggleConfig.defaultParameter or 'F8'
+        )
+    end
 end
 
 Citizen.CreateThread(function()
@@ -601,6 +645,8 @@ Citizen.CreateThread(function()
     if Config.AutoEnableOnDuty and PlayerData.job then
         CheckJobAndEnableTracker()
     end
+
+    TriggerServerEvent('gps_tracker:setPanicState', PanicEnabled)
 
     RegisterTrackerCommands()
     RegisterTrackerKeybinds()
