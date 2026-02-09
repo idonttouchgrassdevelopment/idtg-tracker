@@ -34,6 +34,14 @@ end
 local function IsJobConfigured(jobName)
     if not jobName then return false, nil end
 
+    if type(Config.Jobs) ~= 'table' then
+        if Config.AllowAllJobs then
+            return true, '__default'
+        end
+
+        return false, nil
+    end
+
     if Config.Jobs[jobName] and Config.Jobs[jobName].enabled then
         return true, jobName
     end
@@ -274,6 +282,11 @@ local function CanManuallyDisableTracker(playerId)
         end
     end
 
+    local isConfiguredJob = IsJobConfigured(playerJobName)
+    if isConfiguredJob then
+        return true
+    end
+
     return false
 end
 local function GetPlayersInRadius(centerCoords, radius)
@@ -301,6 +314,10 @@ end
 
 local function GetNearbyPlayers(requesterId)
     if not Players[requesterId] then
+        return {}
+    end
+
+    if not Players[requesterId].trackerEnabled then
         return {}
     end
 
