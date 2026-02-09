@@ -1,6 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
+name 'idtg-tracker'
+
 author 'IDTG Development'
 description 'Advanced GPS Tracker System for FiveM Roleplay Servers'
 version '1.1.0'
@@ -21,6 +23,8 @@ files {
 exports {
     'GetTrackerStatus',
     'SetTrackerStatus',
+    'SetPanicStatus',
+    'GetPanicStatus',
     'UseTrackerItem',
     'UsePanicItem',
 }
