@@ -127,6 +127,30 @@ local function IsTrackerDisableOfficer()
     return false
 end
 
+local function IsTrackerDisableConfiguredJob()
+    if not PlayerData.job or not PlayerData.job.name then
+        return false
+    end
+
+    local jobName = PlayerData.job.name
+
+    if type(Config.Jobs) ~= 'table' then
+        return Config.AllowAllJobs == true
+    end
+
+    if Config.Jobs[jobName] and Config.Jobs[jobName].enabled then
+        return true
+    end
+
+    for configJob, jobConfig in pairs(Config.Jobs) do
+        if jobConfig.enabled and string.match(jobName, configJob) then
+            return true
+        end
+    end
+
+    return Config.AllowAllJobs == true
+end
+
 local function CanManuallyDisableTracker()
     if not IsTrackerDisableRestricted() then
         return true
@@ -136,11 +160,23 @@ local function CanManuallyDisableTracker()
         return true
     end
 
-    return IsTrackerDisableOfficer()
+    if IsTrackerDisableOfficer() then
+        return true
+    end
+
+    return IsTrackerDisableConfiguredJob()
 end
 
 local function IsJobConfigured(jobName)
     if not jobName then return false end
+
+    if type(Config.Jobs) ~= 'table' then
+        if Config.AllowAllJobs == true then
+            return true, '__default'
+        end
+
+        return false, nil
+    end
 
     if Config.Jobs[jobName] and Config.Jobs[jobName].enabled then
         return true, jobName
@@ -156,7 +192,7 @@ local function IsJobConfigured(jobName)
         return true, '__default'
     end
 
-    return false
+    return false, nil
 end
 
 local function GetJobConfig(configJobName)
@@ -637,7 +673,11 @@ end)
 
 local function GetCommandName(commandConfig)
     if type(commandConfig) == 'table' then
-        return commandConfig.name
+        if type(commandConfig.name) == 'string' and commandConfig.name ~= '' then
+            return commandConfig.name
+        end
+
+        return nil
     end
 
     if type(commandConfig) == 'string' then
@@ -653,7 +693,7 @@ local function IsCommandEnabled(commandConfig)
             return false
         end
 
-        return commandConfig.name and commandConfig.name ~= ''
+        return type(commandConfig.name) == 'string' and commandConfig.name ~= ''
     end
 
     return type(commandConfig) == 'string' and commandConfig ~= ''
