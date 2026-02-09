@@ -97,7 +97,7 @@ Config.Panic = {
     cooldownMs = 45000,
     blipDurationMs = 15000,
     nearbyAudibleRadius = 80.0,
-    officerJobs = {'police', 'sheriff', 'sasp', 'bcso', 'fib'},
+    officerJobs = {'police', 'sasp', 'bcso', 'fib'},
     sound = {
         enabled = true,
         audioName = '5_SEC_WARNING',
@@ -123,7 +123,7 @@ Config.Panic = {
 Config.TrackerDisable = {
     restricted = true,
     allowWhenCuffed = true,
-    officerJobs = {'police', 'sheriff', 'sasp', 'bcso', 'fib'}
+    officerJobs = {'police', 'sasp', 'bcso', 'fib'}
 }
 
 -- Animation settings used when toggling the tracker and sending panic alerts
@@ -271,13 +271,13 @@ Config.Jobs = {
     },
     
     -- Sheriff Department
-    ['sheriff'] = {
+    ['bcso'] = {
         enabled = true,
         blip = {
             sprite = 1,
             color = 52,
             scale = 1.0,          -- Increased for better visibility
-            label = 'Sheriff Unit',
+            label = 'BCSO Unit',
             showDistance = true,
         },
         -- Sheriff and police can see each other
