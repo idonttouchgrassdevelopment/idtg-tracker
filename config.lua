@@ -101,7 +101,8 @@ Config.Panic = {
     sound = {
         enabled = true,
         audioName = '5_SEC_WARNING',
-        audioRef = 'HUD_MINI_GAME_SOUNDSET'
+        audioRef = 'HUD_MINI_GAME_SOUNDSET',
+        repeatIntervalMs = 1000
     },
     blip = {
         sprite = 161,

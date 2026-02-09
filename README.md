@@ -174,16 +174,6 @@ Config.Performance = {
 - **100-200 players**: UpdateInterval = 4000ms
 - **200+ players**: UpdateInterval = 5000ms, enable batchUpdates
 
-## Local Validation
-
-If your environment does not have a Lua runtime installed, you can still run a repository sanity check:
-
-```bash
-python3 scripts/validate_panic_changes.py
-```
-
-This validates panic-related event wiring and server-side safety checks added in recent changes.
-
 ## Available Commands
 
 By default, the following commands are available (configure in `config.lua` under `Config.Commands`):
