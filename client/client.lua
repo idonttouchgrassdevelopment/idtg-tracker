@@ -682,7 +682,8 @@ local function OpenTrackerMenu()
     local branding = menuConfig.branding or {}
     local logoIcon = (branding.enabled ~= false and type(branding.icon) == 'string' and branding.icon ~= '') and branding.icon or 'shield-halved'
     local titlePrefix = (branding.enabled ~= false and type(branding.titlePrefix) == 'string' and branding.titlePrefix ~= '') and branding.titlePrefix or '🚓'
-    local menuTitle = string.format('%s GPS Command Tablet', titlePrefix)
+    local customTitle = (branding.enabled ~= false and type(branding.title) == 'string' and branding.title ~= '') and branding.title or 'Emergency Services Tracker System'
+    local menuTitle = string.format('%s %s', titlePrefix, customTitle)
 
     local trackerStateLabel = trackerEnabled and 'ONLINE' or 'OFFLINE'
     local panicStateLabel = panicEnabled and 'ARMED' or 'SAFE'
@@ -692,7 +693,7 @@ local function OpenTrackerMenu()
         title = menuTitle,
         options = {
             {
-                title = (branding.enabled ~= false and branding.label and branding.label ~= '') and branding.label or 'Unit Status',
+                title = (branding.enabled ~= false and branding.label and branding.label ~= '') and branding.label or 'Emergency Dispatch',
                 description = 'Field console status snapshot',
                 icon = logoIcon,
                 iconColor = trackerEnabled and 'green' or 'orange',

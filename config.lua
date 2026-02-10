@@ -478,8 +478,10 @@ Config.Menu = {
         icon = 'shield-halved',
         -- Optional prefix in menu title (emoji/text)
         titlePrefix = '🚓',
+        -- Main menu title text
+        title = 'Emergency Services Tracker System',
         -- Optional label for the status card
-        label = 'Unit Status',
+        label = 'Emergency Dispatch',
     }
 }
 

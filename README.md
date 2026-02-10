@@ -205,8 +205,9 @@ You can customize the menu branding in `Config.Menu.branding`:
 Config.Menu.branding = {
     enabled = true,
     icon = 'shield-halved', -- Font Awesome icon (recommended)
-    titlePrefix = '🚓',      -- Appears before "GPS Command Tablet"
-    label = 'LSPD Unit Status'
+    titlePrefix = '🚓',      -- Appears before your menu title
+    title = 'Emergency Services Tracker System',
+    label = 'Emergency Dispatch'
 }
 ```
 
