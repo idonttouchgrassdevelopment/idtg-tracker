@@ -191,7 +191,9 @@ Optional keybinds are available in `Config.Keybinds`:
 - `toggleTracker` (default: `F6`)
 - `panic` (default: `F7`)
 - `togglePanic` (default: `F8`)
-- `tracker` menu command keybind (default: `F6`)
+- `tracker` menu keybind (default: `F11`, configured in `Config.Menu`)
+
+Keybind registrations use internal `+gps_tracker:*` bindings so they do not create chat command suggestions when command entries are disabled.
 
 Set `Config.Keybinds.enabled = false` to disable keybind registration globally, or set individual keybind `enabled = false`.
 

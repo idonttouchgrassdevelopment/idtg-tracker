@@ -684,30 +684,38 @@ local function OpenTrackerMenu()
     local titlePrefix = (branding.enabled ~= false and type(branding.titlePrefix) == 'string' and branding.titlePrefix ~= '') and branding.titlePrefix or '🚓'
     local menuTitle = string.format('%s GPS Command Tablet', titlePrefix)
 
+    local trackerStateLabel = trackerEnabled and 'ONLINE' or 'OFFLINE'
+    local panicStateLabel = panicEnabled and 'ARMED' or 'SAFE'
+
     lib.registerContext({
         id = 'gps_tracker:menu',
         title = menuTitle,
         options = {
             {
                 title = (branding.enabled ~= false and branding.label and branding.label ~= '') and branding.label or 'Unit Status',
-                description = 'Quick view of tracker and panic availability',
+                description = 'Field console status snapshot',
                 icon = logoIcon,
+                iconColor = trackerEnabled and 'green' or 'orange',
                 readOnly = true,
                 metadata = {
-                    { label = 'Tracker', value = trackerEnabled and 'Enabled' or 'Disabled' },
-                    { label = 'Panic Button', value = panicEnabled and 'Enabled' or 'Disabled' },
-                    { label = 'Cuffed', value = isCuffed and 'Yes (controls limited)' or 'No' }
+                    { label = 'Tracker Uplink', value = trackerStateLabel },
+                    { label = 'Panic Device', value = panicStateLabel },
+                    { label = 'Restraints', value = isCuffed and 'ENGAGED' or 'CLEAR' }
                 }
             },
             {
-                title = trackerEnabled and 'Disable Tracker' or 'Enable Tracker',
-                description = trackerEnabled and 'Stop broadcasting your live location' or 'Start broadcasting your live location',
-                icon = trackerEnabled and 'satellite-dish' or 'location-arrow',
+                title = trackerEnabled and 'Disable Tracker Broadcast' or 'Enable Tracker Broadcast',
+                description = trackerEnabled and 'Stop sending your unit coordinates to command.' or 'Start sending your unit coordinates to command.',
+                icon = trackerEnabled and 'tower-broadcast' or 'location-crosshairs',
                 iconColor = trackerEnabled and 'red' or 'green',
+                progress = trackerEnabled and 100 or 0,
+                colorScheme = trackerEnabled and 'red' or 'green',
                 disabled = isCuffed,
                 metadata = isCuffed and {
-                    { label = 'Locked', value = 'Tracker state cannot be changed while cuffed' }
-                } or nil,
+                    { label = 'Control Lock', value = 'Tracker changes are blocked while cuffed' }
+                } or {
+                    { label = 'Action', value = trackerEnabled and 'Disable uplink' or 'Enable uplink' }
+                },
                 onSelect = function()
                     if trackerEnabled then
                         DisableTracker(true)
@@ -719,23 +727,28 @@ local function OpenTrackerMenu()
                 end
             },
             {
-                title = panicEnabled and 'Disable Panic Button' or 'Enable Panic Button',
-                description = panicEnabled and 'Block panic broadcasts for this session' or 'Allow panic broadcasts for this session',
+                title = panicEnabled and 'Disarm Panic Button' or 'Arm Panic Button',
+                description = panicEnabled and 'Prevent accidental panic broadcasts for now.' or 'Allow emergency panic broadcasts from this tablet.',
                 icon = panicEnabled and 'bell-slash' or 'bell',
                 iconColor = panicEnabled and 'orange' or 'green',
+                progress = panicEnabled and 100 or 0,
+                colorScheme = panicEnabled and 'orange' or 'blue',
+                metadata = {
+                    { label = 'Status', value = panicEnabled and 'Armed' or 'Disarmed' }
+                },
                 onSelect = function()
                     TogglePanicEnabled()
                     OpenTrackerMenu()
                 end
             },
             {
-                title = 'Send Panic Alert',
-                description = 'Broadcast your emergency location to authorized units',
+                title = 'Transmit Panic Alert',
+                description = 'Broadcast a high-priority emergency location beacon.',
                 icon = 'triangle-exclamation',
                 iconColor = 'red',
                 disabled = (not panicEnabled) or isCuffed,
                 metadata = {
-                    { label = 'Ready', value = ((panicEnabled and not isCuffed) and 'Yes' or 'No') }
+                    { label = 'Ready', value = ((panicEnabled and not isCuffed) and 'YES' or 'NO') }
                 },
                 onSelect = function()
                     UsePanic()
@@ -895,39 +908,42 @@ local function RegisterTrackerCommands()
 
 end
 
+local function RegisterKeybindAction(keybindConfig, fallbackName, callback)
+    if not keybindConfig or keybindConfig.enabled == false then
+        return
+    end
+
+    local internalCommand = ('+gps_tracker:%s'):format(fallbackName)
+    if type(keybindConfig.command) == 'string' and keybindConfig.command ~= '' and keybindConfig.command:sub(1, 1) == '+' then
+        internalCommand = keybindConfig.command
+    end
+
+    RegisterCommand(internalCommand, callback, false)
+
+    RegisterKeyMapping(
+        internalCommand,
+        keybindConfig.description or fallbackName,
+        keybindConfig.defaultMapper or 'keyboard',
+        keybindConfig.defaultParameter or 'F6'
+    )
+end
+
 local function RegisterTrackerKeybinds()
     if not Config.Keybinds or Config.Keybinds.enabled == false then
         return
     end
 
-    local toggleConfig = Config.Keybinds.toggleTracker
-    if toggleConfig and toggleConfig.enabled ~= false and toggleConfig.command and toggleConfig.command ~= '' then
-        RegisterCommand(toggleConfig.command, function()
-            OpenTrackerMenu()
-        end, false)
+    RegisterKeybindAction(Config.Keybinds.toggleTracker, 'toggle_tracker', function()
+        OpenTrackerMenu()
+    end)
 
-        RegisterKeyMapping(
-            toggleConfig.command,
-            toggleConfig.description or 'Toggle GPS tracker',
-            toggleConfig.defaultMapper or 'keyboard',
-            toggleConfig.defaultParameter or 'F6'
-        )
-    end
+    RegisterKeybindAction(Config.Keybinds.panic, 'panic_alert', function()
+        UsePanic()
+    end)
 
-    local panicConfig = Config.Keybinds.panic
-    if panicConfig and panicConfig.enabled ~= false and panicConfig.command and panicConfig.command ~= '' then
-        RegisterCommand(panicConfig.command, function()
-            UsePanic()
-        end, false)
-
-        RegisterKeyMapping(
-            panicConfig.command,
-            panicConfig.description or 'Send GPS panic alert',
-            panicConfig.defaultMapper or 'keyboard',
-            panicConfig.defaultParameter or 'F7'
-        )
-    end
-
+    RegisterKeybindAction(Config.Keybinds.togglePanic, 'toggle_panic', function()
+        TogglePanicEnabled()
+    end)
 end
 
 local function RegisterTrackerMenuBindings()
@@ -940,15 +956,18 @@ local function RegisterTrackerMenuBindings()
         RegisterCommand(menuConfig.command, function()
             OpenTrackerMenu()
         end, false)
+    end
 
-        if menuConfig.keybindEnabled ~= false then
-            RegisterKeyMapping(
-                menuConfig.command,
-                menuConfig.description or 'Open GPS tracker menu',
-                menuConfig.defaultMapper or 'keyboard',
-                menuConfig.defaultParameter or 'F9'
-            )
-        end
+    if menuConfig.keybindEnabled ~= false then
+        RegisterKeybindAction({
+            enabled = true,
+            command = menuConfig.keybindCommand,
+            description = menuConfig.description or 'Open GPS tracker menu',
+            defaultMapper = menuConfig.defaultMapper or 'keyboard',
+            defaultParameter = menuConfig.defaultParameter or 'F9'
+        }, 'open_menu', function()
+            OpenTrackerMenu()
+        end)
     end
 end
 
