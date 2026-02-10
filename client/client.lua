@@ -328,11 +328,74 @@ local function BuildBlipLabel(data)
     return name
 end
 
+local function IsJobInList(jobName, jobs)
+    if not jobName or type(jobs) ~= 'table' then
+        return false
+    end
+
+    for _, configuredJob in ipairs(jobs) do
+        if configuredJob == jobName then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function ResolvePoliceBlipOverride(data, jobBlip)
+    local policeConfig = Config.PoliceBlip or {}
+
+    if policeConfig.enabled ~= true then
+        return jobBlip
+    end
+
+    local jobName = data and data.job and data.job.name
+    if not IsJobInList(jobName, policeConfig.jobs) then
+        return jobBlip
+    end
+
+    local merged = {
+        sprite = tonumber(policeConfig.sprite) or jobBlip.sprite,
+        color = policeConfig.color or jobBlip.color,
+        scale = tonumber(policeConfig.scale) or jobBlip.scale,
+        label = ((policeConfig.labelPrefix and policeConfig.labelPrefix ~= '') and (policeConfig.labelPrefix .. ' Unit')) or jobBlip.label,
+        showDistance = jobBlip.showDistance,
+        flashWhenLightsOn = policeConfig.flashWhenLightsOn,
+        flashIntervalMs = policeConfig.flashIntervalMs
+    }
+
+    if merged.sprite == nil then
+        merged.sprite = jobBlip.sprite
+    end
+
+    if merged.color == nil then
+        merged.color = jobBlip.color
+    end
+
+    if merged.scale == nil then
+        merged.scale = jobBlip.scale
+    end
+
+    return merged
+end
+
+local function ShouldBlipFlash(jobBlip, lightsOn)
+    if not jobBlip then
+        return false
+    end
+
+    if jobBlip.flashWhenLightsOn == true then
+        return lightsOn == true
+    end
+
+    return false
+end
+
 local function CreateOrUpdateBlip(data)
     if not data or not data.coords then return end
 
     local coords = data.coords
-    local jobBlip = data.blip or {}
+    local jobBlip = ResolvePoliceBlipOverride(data, data.blip or {})
     local color = ResolveBlipColor(jobBlip.color)
     local scale = tonumber(jobBlip.scale) or 1.0
     local sprite = tonumber(jobBlip.sprite) or 1
@@ -350,6 +413,13 @@ local function CreateOrUpdateBlip(data)
     SetBlipSprite(blip, sprite)
     SetBlipColour(blip, color)
     SetBlipScale(blip, scale)
+
+    if ShouldBlipFlash(jobBlip, data.lightsOn) then
+        SetBlipFlashes(blip, true)
+        SetBlipFlashInterval(blip, tonumber(jobBlip.flashIntervalMs) or 250)
+    else
+        SetBlipFlashes(blip, false)
+    end
 
     BeginTextCommandSetBlipName('STRING')
     AddTextComponentString(BuildBlipLabel(data))
@@ -444,12 +514,21 @@ function StartUpdateLoop()
 
             local coords = GetEntityCoords(PlayerPedId())
 
+            local ped = PlayerPedId()
+            local vehicle = GetVehiclePedIsIn(ped, false)
+            local lightsOn = false
+
+            if vehicle and vehicle ~= 0 and GetPedInVehicleSeat(vehicle, -1) == ped then
+                lightsOn = IsVehicleSirenOn(vehicle) or IsVehicleAlarmOn(vehicle)
+            end
+
             TriggerServerEvent('gps_tracker:updatePosition', {
                 coords = {
                     x = coords.x,
                     y = coords.y,
                     z = coords.z
-                }
+                },
+                lightsOn = lightsOn
             })
 
             TriggerServerEvent('gps_tracker:getNearbyPlayers')
@@ -488,6 +567,18 @@ local function CreatePanicBlip(data)
     EndTextCommandSetBlipName(panicBlip)
 
     PanicBlips[key] = panicBlip
+
+    local centerIconConfig = blipConfig.centerIcon or {}
+    if centerIconConfig.enabled ~= false then
+        local centerBlip = AddBlipForCoord(data.coords.x, data.coords.y, data.coords.z)
+        SetBlipSprite(centerBlip, tonumber(centerIconConfig.sprite) or 303)
+        SetBlipColour(centerBlip, ResolveBlipColor(centerIconConfig.color or blipConfig.color or 1))
+        SetBlipScale(centerBlip, tonumber(centerIconConfig.scale) or 0.85)
+        SetBlipAsShortRange(centerBlip, false)
+        SetBlipFlashes(centerBlip, true)
+        SetBlipFlashInterval(centerBlip, 250)
+        PanicBlips[key .. ':center'] = centerBlip
+    end
 
     if blipConfig.showRadius ~= false then
         local radius = tonumber(blipConfig.radius) or 90.0

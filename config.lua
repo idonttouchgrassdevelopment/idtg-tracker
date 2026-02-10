@@ -111,11 +111,32 @@ Config.Panic = {
         color = 1,
         scale = 1.9,
         label = 'PANIC',
+        -- Optional icon layered in the center of the panic blip
+        centerIcon = {
+            enabled = true,
+            -- radar_bounty_hit style icon
+            sprite = 303,
+            color = 1,
+            scale = 0.85
+        },
         showRadius = true,
         radius = 90.0,
         radiusColor = 1,
         radiusAlpha = 120
     }
+}
+
+-- Police departments can share a custom blip style without repeating settings
+-- Set enabled = false to keep each configured job sprite/color exactly as-is.
+Config.PoliceBlip = {
+    enabled = true,
+    jobs = {'police', 'sasp', 'bcso', 'fib'},
+    sprite = 60,
+    color = 38,
+    scale = 1.0,
+    labelPrefix = 'LEO',
+    flashWhenLightsOn = true,
+    flashIntervalMs = 250
 }
 
 -- Restrict manual tracker disabling so only officers can disable it,
@@ -228,6 +249,8 @@ Config.Jobs = {
             scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'LSPD Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
+            flashWhenLightsOn = true,
+            flashIntervalMs = 250,
         },
         -- Jobs that can see this job's players on the map
         -- Use 'all' to allow all configured jobs to see them
@@ -245,6 +268,8 @@ Config.Jobs = {
             scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'SASP Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
+            flashWhenLightsOn = true,
+            flashIntervalMs = 250,
         },
         -- Jobs that can see this job's players on the map
         -- Use 'all' to allow all configured jobs to see them
@@ -262,6 +287,8 @@ Config.Jobs = {
             scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'FIB Unit',-- Label shown on map
             showDistance = true,  -- Show distance in label
+            flashWhenLightsOn = true,
+            flashIntervalMs = 250,
         },
         -- Jobs that can see this job's players on the map
         -- Use 'all' to allow all configured jobs to see them
@@ -279,6 +306,8 @@ Config.Jobs = {
             scale = 1.0,          -- Increased for better visibility
             label = 'BCSO Unit',
             showDistance = true,
+            flashWhenLightsOn = true,
+            flashIntervalMs = 250,
         },
         -- Sheriff and police can see each other
         visibleTo = {'police', 'sheriff', 'ems', 'ambulance', 'fire', 'sasp', 'bcso', 'fib'},

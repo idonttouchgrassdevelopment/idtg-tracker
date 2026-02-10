@@ -540,6 +540,9 @@ You can change item names in `Config.OxInventoryItems`, but if you change export
 - `Config.DefaultJob` controls fallback blip/visibility settings used by all non-configured jobs.
 - `Config.Animations.trackerToggle` and `Config.Animations.panic` let you fully configure animations and duration.
 - `Config.Panic` controls panic cooldown, panic blip style, and how long panic blips stay visible.
+- `Config.Panic.blip.centerIcon` adds an optional center icon overlay (default is `radar_bounty_hit` style sprite `303`).
+- `Config.PoliceBlip` applies a shared custom blip style to police-related departments.
+- `blip.flashWhenLightsOn` and `flashIntervalMs` allow emergency blips to flash when the tracked unit has lights/siren active.
 - `Config.CuffChecks` blocks tracker/panic while the player is cuffed using state bag keys and optional exported checks.
 
 

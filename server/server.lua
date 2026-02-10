@@ -165,7 +165,8 @@ local function InitializePlayer(playerId, playerData)
         isOnline = true,
         trackerEnabled = false,
         panicEnabled = true,
-        panicLastAt = 0
+        panicLastAt = 0,
+        lightsOn = false
     }
 end
 
@@ -341,7 +342,8 @@ local function GetNearbyPlayers(requesterId)
                     playerName = playerData.name,
                     job = playerData.job,
                     blip = GetJobConfig(targetConfigJobName).blip or {},
-                    coords = playerData.coords
+                    coords = playerData.coords,
+                    lightsOn = playerData.lightsOn == true
                 })
             end
         end
@@ -365,6 +367,7 @@ RegisterNetEvent('gps_tracker:updatePosition', function(positionData)
         y = coords.y,
         z = coords.z
     }
+    Players[playerId].lightsOn = positionData and positionData.lightsOn == true
     Players[playerId].lastUpdate = GetGameTimer()
     Players[playerId].trackerEnabled = true
 end)
