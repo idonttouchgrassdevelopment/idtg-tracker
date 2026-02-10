@@ -414,25 +414,13 @@ Config.Notifications = {
 
 Config.Commands = {
     enabled = true,              -- Master toggle for all tracker commands
-    enable = {
+    tracker = {
         enabled = true,
-        name = 'enabletracker',  -- Command to manually enable tracker
-    },
-    disable = {
-        enabled = true,
-        name = 'disabletracker', -- Command to manually disable tracker
-    },
-    status = {
-        enabled = true,
-        name = 'trackerstatus',  -- Command to check tracker status
+        name = 'tracker',        -- Opens tracker/panic control menu
     },
     panic = {
         enabled = true,
         name = 'panic',          -- Command to trigger a panic alert
-    },
-    panicStatus = {
-        enabled = true,
-        name = 'panicstatus',    -- Check panic button state
     },
 }
 
@@ -478,11 +466,20 @@ Config.Keybinds = {
 
 Config.Menu = {
     enabled = true,
-    command = 'trackermenu',
+    command = '',
     description = 'Open GPS tracker menu',
     keybindEnabled = true,
     defaultMapper = 'keyboard',
     defaultParameter = 'F9',
+    branding = {
+        enabled = true,
+        -- Font Awesome icon name OR image URL supported by ox_lib (if your build supports URL icons)
+        icon = 'shield-halved',
+        -- Optional prefix in menu title (emoji/text)
+        titlePrefix = '🚓',
+        -- Optional label for the status card
+        label = 'Unit Status',
+    }
 }
 
 -- =============================================================================
