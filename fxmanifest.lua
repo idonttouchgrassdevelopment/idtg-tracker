@@ -12,11 +12,16 @@ server_script 'server/server.lua'
 
 shared_script 'config.lua'
 
+ui_page 'ui/index.html'
+
 dependencies {
 }
 
 files {
     'locales/en.lua',
+    'ui/index.html',
+    'ui/style.css',
+    'ui/app.js',
 }
 
 exports {
