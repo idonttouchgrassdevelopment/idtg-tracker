@@ -83,11 +83,11 @@ Config.UseOxInventory = true
 -- Register usable ox_inventory items (toggle tracker/panic)
 Config.OxInventoryItems = {
     tracker = {
-        enabled = true,
+        enabled = false,
         name = 'gps_tracker'
     },
     panic = {
-        enabled = true,
+        enabled = false,
         name = 'panic_button'
     }
 }
@@ -130,7 +130,7 @@ Config.Panic = {
 -- Police departments can share a custom blip style without repeating settings
 -- Set enabled = false to keep each configured job sprite/color exactly as-is.
 Config.PoliceBlip = {
-    enabled = true,
+    enabled = false,
     jobs = {'police', 'sasp', 'bcso', 'fib'},
     sprite = 60,
     color = 38,
@@ -144,8 +144,8 @@ Config.PoliceBlip = {
 -- unless the player is currently cuffed.
 Config.TrackerDisable = {
     restricted = true,
-    allowWhenCuffed = true,
-    officerJobs = {'police', 'sasp', 'bcso', 'fib'}
+    allowWhenCuffed = false,
+    officerJobs = {'police', 'sasp', 'bcso', 'fib', 'ems', 'ambulance', 'fire'},
 }
 
 -- Animation settings used when toggling the tracker and sending panic alerts
@@ -245,7 +245,7 @@ Config.Jobs = {
         enabled = true,
         -- Blip configuration for this job
         blip = {
-            sprite = 1,           -- Blip sprite (1 = standard police blip)
+            sprite = 60,           -- Blip sprite (1 = standard police blip)
             color = 38,           -- Blip color (38 = blue)
             scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'LSPD Unit',-- Label shown on map
@@ -261,10 +261,10 @@ Config.Jobs = {
     },
 
     ['sasp'] = {
-        enabled = true,
+        enabled = true,  
         -- Blip configuration for this job
         blip = {
-            sprite = 1,           -- Blip sprite (1 = standard police blip)
+            sprite = 60,           -- Blip sprite (1 = standard police blip)
             color = 39,           -- Blip color (38 = blue)
             scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'SASP Unit',-- Label shown on map
@@ -283,7 +283,7 @@ Config.Jobs = {
         enabled = true,
         -- Blip configuration for this job
         blip = {
-            sprite = 1,           -- Blip sprite (1 = standard police blip)
+            sprite = 60,           -- Blip sprite (1 = standard police blip)
             color = 40,           -- Blip color (38 = blue)
             scale = 1.0,          -- Blip size (0.1 - 5.0) - Increased for better visibility
             label = 'FIB Unit',-- Label shown on map
@@ -302,7 +302,7 @@ Config.Jobs = {
     ['bcso'] = {
         enabled = true,
         blip = {
-            sprite = 1,
+            sprite = 60,
             color = 52,
             scale = 1.0,          -- Increased for better visibility
             label = 'BCSO Unit',
@@ -413,7 +413,7 @@ Config.Notifications = {
 -- =============================================================================
 
 Config.Commands = {
-    enabled = true,              -- Master toggle for all tracker commands
+    enabled = false,              -- Master toggle for all tracker commands
     tracker = {
         enabled = true,
         name = 'tracker',        -- Opens tracker/panic control menu
@@ -434,7 +434,7 @@ Config.Commands = {
 -- =============================================================================
 
 Config.Keybinds = {
-    enabled = true,
+    enabled = false,
     toggleTracker = {
         enabled = true,
         command = 'tracker',
@@ -470,7 +470,7 @@ Config.Menu = {
     description = 'Open GPS tracker menu',
     keybindEnabled = true,
     defaultMapper = 'keyboard',
-    defaultParameter = 'F9',
+    defaultParameter = 'F11',
     branding = {
         enabled = true,
         -- Font Awesome icon name OR image URL supported by ox_lib (if your build supports URL icons)
