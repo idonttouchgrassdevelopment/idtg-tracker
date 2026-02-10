@@ -469,6 +469,21 @@ Config.Keybinds = {
 }
 
 -- =============================================================================
+-- NUI MENU
+-- =============================================================================
+-- Small UI for quickly toggling tracker and panic state.
+-- =============================================================================
+
+Config.Menu = {
+    enabled = true,
+    command = 'trackermenu',
+    description = 'Open GPS tracker menu',
+    keybindEnabled = true,
+    defaultMapper = 'keyboard',
+    defaultParameter = 'F9',
+}
+
+-- =============================================================================
 -- PERFORMANCE SETTINGS
 -- =============================================================================
 -- Advanced settings for performance optimization

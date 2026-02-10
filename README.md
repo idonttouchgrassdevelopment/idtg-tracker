@@ -184,6 +184,7 @@ By default, the following commands are available (configure in `config.lua` unde
 - `/trackerstatus` - Check current tracker status
 - `/panic` - Send a panic alert to authorized units
 - `/panicstatus` - Check whether panic button usage is enabled
+- `/trackermenu` - Open the tracker NUI menu to toggle tracker and panic button
 
 You can disable all commands with `Config.Commands.enabled = false` or disable each command individually with `enabled = false`.
 
@@ -194,6 +195,7 @@ Optional keybinds are available in `Config.Keybinds`:
 - `toggleTracker` (default: `F6`)
 - `panic` (default: `F7`)
 - `togglePanic` (default: `F8`)
+- `trackermenu` command keybind (default: `F9`)
 
 Set `Config.Keybinds.enabled = false` to disable keybind registration globally, or set individual keybind `enabled = false`.
 

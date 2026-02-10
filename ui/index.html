@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GPS Tracker Menu</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="menu" class="menu hidden">
+    <h1>GPS Tracker</h1>
+    <p class="hint">Manage your tracker and panic button.</p>
+
+    <div class="status-grid">
+      <div class="status-card">
+        <span>Tracker</span>
+        <strong id="trackerState">OFF</strong>
+      </div>
+      <div class="status-card">
+        <span>Panic Button</span>
+        <strong id="panicState">ON</strong>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="toggleTracker" type="button">Toggle Tracker</button>
+      <button id="togglePanic" type="button">Toggle Panic</button>
+      <button id="closeMenu" type="button" class="secondary">Close</button>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

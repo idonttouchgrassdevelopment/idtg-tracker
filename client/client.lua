@@ -12,6 +12,7 @@ local QBCore = nil
 local LastPanicAt = 0
 local PanicEnabled = true
 local AutoEnableSuppressed = false
+local MenuOpen = false
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -25,6 +26,32 @@ local function ShowNotification(type)
         AddTextComponentString(message)
         DrawNotification(false, false)
     end
+end
+
+local function SendMenuState()
+    SendNUIMessage({
+        type = 'gps_tracker:state',
+        trackerEnabled = TrackerEnabled,
+        panicEnabled = PanicEnabled,
+    })
+end
+
+local function SetMenuOpen(state)
+    MenuOpen = state == true
+    SetNuiFocus(MenuOpen, MenuOpen)
+
+    SendNUIMessage({
+        type = 'gps_tracker:menu',
+        visible = MenuOpen
+    })
+
+    if MenuOpen then
+        SendMenuState()
+    end
+end
+
+local function ToggleMenu()
+    SetMenuOpen(not MenuOpen)
 end
 
 local function DetectFramework()
@@ -463,6 +490,7 @@ function EnableTracker(playAnimation, isManualAction)
 
     TrackerEnabled = true
     ShowNotification('tracker_enabled')
+    SendMenuState()
 
     TriggerServerEvent('gps_tracker:requestPlayerData')
     StartUpdateLoop()
@@ -486,6 +514,7 @@ function DisableTracker(isManualAction)
     TriggerServerEvent('gps_tracker:disableTracker')
     ClearAllBlips()
     ShowNotification('tracker_disabled')
+    SendMenuState()
 
     return true
 end
@@ -639,6 +668,7 @@ end
 local function SetPanicEnabled(state, showNotification)
     PanicEnabled = state == true
     TriggerServerEvent('gps_tracker:setPanicState', PanicEnabled)
+    SendMenuState()
 
     if showNotification == true then
         ShowNotification(PanicEnabled and 'panic_enabled' or 'panic_disabled')
@@ -734,7 +764,8 @@ RegisterNetEvent('gps_tracker:playerDisconnected', function(serverId)
     RemoveBlipByServerId(serverId)
 end)
 
-RegisterNetEvent('gps_tracker:panicSent', function()
+RegisterNetEvent('gps_tracker:panicSent', function(data)
+    CreatePanicBlip(data)
     PlayPanicSoundForDuration((Config.Panic and Config.Panic.blipDurationMs) or 15000)
     ShowNotification('panic_sent')
 end)
@@ -878,6 +909,50 @@ local function RegisterTrackerKeybinds()
     end
 end
 
+local function RegisterTrackerMenuBindings()
+    local menuConfig = Config.Menu
+    if not menuConfig or menuConfig.enabled == false then
+        return
+    end
+
+    if menuConfig.command and menuConfig.command ~= '' then
+        RegisterCommand(menuConfig.command, function()
+            ToggleMenu()
+        end, false)
+
+        if menuConfig.keybindEnabled ~= false then
+            RegisterKeyMapping(
+                menuConfig.command,
+                menuConfig.description or 'Open GPS tracker menu',
+                menuConfig.defaultMapper or 'keyboard',
+                menuConfig.defaultParameter or 'F9'
+            )
+        end
+    end
+end
+
+RegisterNUICallback('gps_tracker:toggleTracker', function(_, cb)
+    if TrackerEnabled then
+        DisableTracker(true)
+    else
+        EnableTracker(true, true)
+    end
+
+    SendMenuState()
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('gps_tracker:togglePanic', function(_, cb)
+    TogglePanicEnabled()
+    SendMenuState()
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('gps_tracker:close', function(_, cb)
+    SetMenuOpen(false)
+    cb({ ok = true })
+end)
+
 Citizen.CreateThread(function()
     Wait(1000)
 
@@ -899,6 +974,7 @@ Citizen.CreateThread(function()
 
     RegisterTrackerCommands()
     RegisterTrackerKeybinds()
+    RegisterTrackerMenuBindings()
     exports('GetTrackerStatus', GetTrackerStatus)
 
 
