@@ -62,6 +62,7 @@ ensure gps_tracker
 **Important**: Make sure `gps_tracker` is loaded AFTER your framework resources:
 
 ```cfg
+ensure ox_lib
 ensure es_extended  # or qb-core
 ensure gps_tracker
 ```
@@ -184,7 +185,7 @@ By default, the following commands are available (configure in `config.lua` unde
 - `/trackerstatus` - Check current tracker status
 - `/panic` - Send a panic alert to authorized units
 - `/panicstatus` - Check whether panic button usage is enabled
-- `/trackermenu` - Open the tracker NUI menu to toggle tracker and panic button
+- `/trackermenu` - Open the ox_lib tracker menu to toggle tracker and panic button
 
 You can disable all commands with `Config.Commands.enabled = false` or disable each command individually with `enabled = false`.
 

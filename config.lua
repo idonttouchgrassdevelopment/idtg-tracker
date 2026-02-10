@@ -400,6 +400,7 @@ Config.Notifications = {
     ['panic_status_enabled'] = 'Panic button is enabled',
     ['panic_status_disabled'] = 'Panic button is disabled',
     ['panic_failed'] = 'Unable to send panic signal right now',
+    ['ox_lib_required'] = 'ox_lib is required for the GPS tracker menu',
     ['tracker_disable_restricted'] = 'Tracker can only be disabled by officers, unless you are cuffed',
 }
 
@@ -471,7 +472,7 @@ Config.Keybinds = {
 -- =============================================================================
 -- MENU
 -- =============================================================================
--- Uses ox_lib context menu when ox_lib is running, otherwise falls back to NUI.
+-- Uses ox_lib context menu for tracker and panic actions.
 -- =============================================================================
 
 Config.Menu = {

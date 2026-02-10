@@ -12,7 +12,6 @@ local QBCore = nil
 local LastPanicAt = 0
 local PanicEnabled = true
 local AutoEnableSuppressed = false
-local MenuOpen = false
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -26,32 +25,6 @@ local function ShowNotification(type)
         AddTextComponentString(message)
         DrawNotification(false, false)
     end
-end
-
-local function SendMenuState()
-    SendNUIMessage({
-        type = 'gps_tracker:state',
-        trackerEnabled = TrackerEnabled,
-        panicEnabled = PanicEnabled,
-    })
-end
-
-local function SetMenuOpen(state)
-    MenuOpen = state == true
-    SetNuiFocus(MenuOpen, MenuOpen)
-
-    SendNUIMessage({
-        type = 'gps_tracker:menu',
-        visible = MenuOpen
-    })
-
-    if MenuOpen then
-        SendMenuState()
-    end
-end
-
-local function ToggleMenu()
-    SetMenuOpen(not MenuOpen)
 end
 
 local function IsOxLibMenuAvailable()
@@ -494,7 +467,6 @@ function EnableTracker(playAnimation, isManualAction)
 
     TrackerEnabled = true
     ShowNotification('tracker_enabled')
-    SendMenuState()
 
     TriggerServerEvent('gps_tracker:requestPlayerData')
     StartUpdateLoop()
@@ -518,7 +490,6 @@ function DisableTracker(isManualAction)
     TriggerServerEvent('gps_tracker:disableTracker')
     ClearAllBlips()
     ShowNotification('tracker_disabled')
-    SendMenuState()
 
     return true
 end
@@ -681,7 +652,6 @@ end
 local function SetPanicEnabled(state, showNotification)
     PanicEnabled = state == true
     TriggerServerEvent('gps_tracker:setPanicState', PanicEnabled)
-    SendMenuState()
 
     if showNotification == true then
         ShowNotification(PanicEnabled and 'panic_enabled' or 'panic_disabled')
@@ -696,6 +666,54 @@ end
 
 local function GetPanicEnabled()
     return PanicEnabled
+end
+
+local function OpenTrackerMenu()
+    if not IsOxLibMenuAvailable() then
+        ShowNotification('ox_lib_required')
+        return
+    end
+
+    local trackerEnabled = TrackerEnabled
+    local panicEnabled = PanicEnabled
+
+    lib.registerContext({
+        id = 'gps_tracker:menu',
+        title = 'GPS Tracker',
+        options = {
+            {
+                title = trackerEnabled and 'Disable Tracker' or 'Enable Tracker',
+                description = trackerEnabled and 'Tracker is currently enabled' or 'Tracker is currently disabled',
+                icon = trackerEnabled and 'satellite-dish' or 'location-arrow',
+                onSelect = function()
+                    if trackerEnabled then
+                        DisableTracker(true)
+                    else
+                        EnableTracker(true, true)
+                    end
+                end
+            },
+            {
+                title = panicEnabled and 'Disable Panic Button' or 'Enable Panic Button',
+                description = panicEnabled and 'Panic button is currently enabled' or 'Panic button is currently disabled',
+                icon = panicEnabled and 'bell-slash' or 'bell',
+                onSelect = function()
+                    TogglePanicEnabled()
+                end
+            },
+            {
+                title = 'Send Panic Alert',
+                description = 'Broadcast your panic location to authorized units',
+                icon = 'triangle-exclamation',
+                disabled = not panicEnabled,
+                onSelect = function()
+                    UsePanic()
+                end
+            }
+        }
+    })
+
+    lib.showContext('gps_tracker:menu')
 end
 
 local function UsePanic()
@@ -737,15 +755,11 @@ end
 
 
 exports('UseTrackerItem', function()
-    if TrackerEnabled then
-        DisableTracker(true)
-    else
-        EnableTracker(true, true)
-    end
+    OpenTrackerMenu()
 end)
 
 exports('UsePanicItem', function()
-    UsePanic()
+    OpenTrackerMenu()
 end)
 
 exports('SetTrackerStatus', SetTrackerStatus)
@@ -794,15 +808,11 @@ RegisterNetEvent('gps_tracker:receivePanic', function(data)
 end)
 
 RegisterNetEvent('gps_tracker:useTrackerItem', function()
-    if TrackerEnabled then
-        DisableTracker(true)
-    else
-        EnableTracker(true, true)
-    end
+    OpenTrackerMenu()
 end)
 
 RegisterNetEvent('gps_tracker:usePanicItem', function()
-    UsePanic()
+    OpenTrackerMenu()
 end)
 
 local function GetCommandName(commandConfig)
@@ -930,51 +940,7 @@ local function RegisterTrackerMenuBindings()
 
     if menuConfig.command and menuConfig.command ~= '' then
         RegisterCommand(menuConfig.command, function()
-            if IsOxLibMenuAvailable() then
-                local trackerEnabled = TrackerEnabled
-                local panicEnabled = PanicEnabled
-
-                lib.registerContext({
-                    id = 'gps_tracker:menu',
-                    title = 'GPS Tracker',
-                    options = {
-                        {
-                            title = trackerEnabled and 'Disable Tracker' or 'Enable Tracker',
-                            description = trackerEnabled and 'Tracker is currently enabled' or 'Tracker is currently disabled',
-                            icon = trackerEnabled and 'satellite-dish' or 'location-arrow',
-                            onSelect = function()
-                                if trackerEnabled then
-                                    DisableTracker(true)
-                                else
-                                    EnableTracker(true, true)
-                                end
-                            end
-                        },
-                        {
-                            title = panicEnabled and 'Disable Panic Button' or 'Enable Panic Button',
-                            description = panicEnabled and 'Panic button is currently enabled' or 'Panic button is currently disabled',
-                            icon = panicEnabled and 'bell-slash' or 'bell',
-                            onSelect = function()
-                                TogglePanicEnabled()
-                            end
-                        },
-                        {
-                            title = 'Send Panic Alert',
-                            description = 'Broadcast your panic location to authorized units',
-                            icon = 'triangle-exclamation',
-                            disabled = not panicEnabled,
-                            onSelect = function()
-                                UsePanic()
-                            end
-                        }
-                    }
-                })
-
-                lib.showContext('gps_tracker:menu')
-                return
-            end
-
-            ToggleMenu()
+            OpenTrackerMenu()
         end, false)
 
         if menuConfig.keybindEnabled ~= false then
@@ -987,28 +953,6 @@ local function RegisterTrackerMenuBindings()
         end
     end
 end
-
-RegisterNUICallback('gps_tracker:toggleTracker', function(_, cb)
-    if TrackerEnabled then
-        DisableTracker(true)
-    else
-        EnableTracker(true, true)
-    end
-
-    SendMenuState()
-    cb({ ok = true })
-end)
-
-RegisterNUICallback('gps_tracker:togglePanic', function(_, cb)
-    TogglePanicEnabled()
-    SendMenuState()
-    cb({ ok = true })
-end)
-
-RegisterNUICallback('gps_tracker:close', function(_, cb)
-    SetMenuOpen(false)
-    cb({ ok = true })
-end)
 
 Citizen.CreateThread(function()
     Wait(1000)

@@ -10,18 +10,17 @@ version '1.0.0'
 client_script 'client/client.lua'
 server_script 'server/server.lua'
 
-shared_script 'config.lua'
-
-ui_page 'ui/index.html'
+shared_scripts {
+    '@ox_lib/init.lua',
+    'config.lua'
+}
 
 dependencies {
+    'ox_lib',
 }
 
 files {
     'locales/en.lua',
-    'ui/index.html',
-    'ui/style.css',
-    'ui/app.js',
 }
 
 exports {
