@@ -12,6 +12,7 @@ local QBCore = nil
 local LastPanicAt = 0
 local PanicEnabled = true
 local AutoEnableSuppressed = false
+local UsePanic
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -296,11 +297,11 @@ end
 function CheckJobAndEnableTracker()
     if not PlayerData.job then return end
 
-    local canUse = CanUseTracker()
+    local canUse, reason = CanUseTracker()
 
     if not canUse then
         AutoEnableSuppressed = false
-        if TrackerEnabled then
+        if TrackerEnabled and reason ~= 'cannot_use_cuffed' then
             DisableTracker(false)
         end
         return
@@ -475,6 +476,11 @@ function EnableTracker(playAnimation, isManualAction)
 end
 
 function DisableTracker(isManualAction)
+    if IsPlayerCuffed() then
+        ShowNotification('cannot_use_cuffed')
+        return false
+    end
+
     if isManualAction == true then
         if not CanManuallyDisableTracker() then
             ShowNotification('tracker_disable_restricted')
@@ -510,12 +516,6 @@ end
 function StartUpdateLoop()
     Citizen.CreateThread(function()
         while TrackerEnabled do
-            if IsPlayerCuffed() then
-                DisableTracker(false)
-                ShowNotification('cannot_use_cuffed')
-                break
-            end
-
             local coords = GetEntityCoords(PlayerPedId())
 
             local ped = PlayerPedId()
@@ -676,36 +676,67 @@ local function OpenTrackerMenu()
 
     local trackerEnabled = TrackerEnabled
     local panicEnabled = PanicEnabled
+    local isCuffed = IsPlayerCuffed()
+
+    local menuConfig = Config.Menu or {}
+    local branding = menuConfig.branding or {}
+    local logoIcon = (branding.enabled ~= false and type(branding.icon) == 'string' and branding.icon ~= '') and branding.icon or 'shield-halved'
+    local titlePrefix = (branding.enabled ~= false and type(branding.titlePrefix) == 'string' and branding.titlePrefix ~= '') and branding.titlePrefix or '🚓'
+    local menuTitle = string.format('%s GPS Command Tablet', titlePrefix)
 
     lib.registerContext({
         id = 'gps_tracker:menu',
-        title = 'GPS Tracker',
+        title = menuTitle,
         options = {
             {
+                title = (branding.enabled ~= false and branding.label and branding.label ~= '') and branding.label or 'Unit Status',
+                description = 'Quick view of tracker and panic availability',
+                icon = logoIcon,
+                readOnly = true,
+                metadata = {
+                    { label = 'Tracker', value = trackerEnabled and 'Enabled' or 'Disabled' },
+                    { label = 'Panic Button', value = panicEnabled and 'Enabled' or 'Disabled' },
+                    { label = 'Cuffed', value = isCuffed and 'Yes (controls limited)' or 'No' }
+                }
+            },
+            {
                 title = trackerEnabled and 'Disable Tracker' or 'Enable Tracker',
-                description = trackerEnabled and 'Tracker is currently enabled' or 'Tracker is currently disabled',
+                description = trackerEnabled and 'Stop broadcasting your live location' or 'Start broadcasting your live location',
                 icon = trackerEnabled and 'satellite-dish' or 'location-arrow',
+                iconColor = trackerEnabled and 'red' or 'green',
+                disabled = isCuffed,
+                metadata = isCuffed and {
+                    { label = 'Locked', value = 'Tracker state cannot be changed while cuffed' }
+                } or nil,
                 onSelect = function()
                     if trackerEnabled then
                         DisableTracker(true)
                     else
                         EnableTracker(true, true)
                     end
+
+                    OpenTrackerMenu()
                 end
             },
             {
                 title = panicEnabled and 'Disable Panic Button' or 'Enable Panic Button',
-                description = panicEnabled and 'Panic button is currently enabled' or 'Panic button is currently disabled',
+                description = panicEnabled and 'Block panic broadcasts for this session' or 'Allow panic broadcasts for this session',
                 icon = panicEnabled and 'bell-slash' or 'bell',
+                iconColor = panicEnabled and 'orange' or 'green',
                 onSelect = function()
                     TogglePanicEnabled()
+                    OpenTrackerMenu()
                 end
             },
             {
                 title = 'Send Panic Alert',
-                description = 'Broadcast your panic location to authorized units',
+                description = 'Broadcast your emergency location to authorized units',
                 icon = 'triangle-exclamation',
-                disabled = not panicEnabled,
+                iconColor = 'red',
+                disabled = (not panicEnabled) or isCuffed,
+                metadata = {
+                    { label = 'Ready', value = ((panicEnabled and not isCuffed) and 'Yes' or 'No') }
+                },
                 onSelect = function()
                     UsePanic()
                 end
@@ -716,7 +747,7 @@ local function OpenTrackerMenu()
     lib.showContext('gps_tracker:menu')
 end
 
-local function UsePanic()
+UsePanic = function()
     if not Config.Panic or not Config.Panic.enabled then
         return
     end
@@ -848,21 +879,9 @@ local function RegisterTrackerCommands()
         return
     end
 
-    if IsCommandEnabled(Config.Commands.enable) then
-        RegisterCommand(GetCommandName(Config.Commands.enable), function()
-            EnableTracker(true, true)
-        end, false)
-    end
-
-    if IsCommandEnabled(Config.Commands.disable) then
-        RegisterCommand(GetCommandName(Config.Commands.disable), function()
-            DisableTracker(true)
-        end, false)
-    end
-
-    if IsCommandEnabled(Config.Commands.status) then
-        RegisterCommand(GetCommandName(Config.Commands.status), function()
-            ShowNotification(TrackerEnabled and 'status_enabled' or 'status_disabled')
+    if IsCommandEnabled(Config.Commands.tracker) then
+        RegisterCommand(GetCommandName(Config.Commands.tracker), function()
+            OpenTrackerMenu()
         end, false)
     end
 
@@ -872,12 +891,6 @@ local function RegisterTrackerCommands()
         end, false)
     end
 
-
-    if IsCommandEnabled(Config.Commands.panicStatus) then
-        RegisterCommand(GetCommandName(Config.Commands.panicStatus), function()
-            ShowNotification(PanicEnabled and 'panic_status_enabled' or 'panic_status_disabled')
-        end, false)
-    end
 end
 
 local function RegisterTrackerKeybinds()
@@ -888,11 +901,7 @@ local function RegisterTrackerKeybinds()
     local toggleConfig = Config.Keybinds.toggleTracker
     if toggleConfig and toggleConfig.enabled ~= false and toggleConfig.command and toggleConfig.command ~= '' then
         RegisterCommand(toggleConfig.command, function()
-            if TrackerEnabled then
-                DisableTracker(true)
-            else
-                EnableTracker(true, true)
-            end
+            OpenTrackerMenu()
         end, false)
 
         RegisterKeyMapping(
@@ -917,19 +926,6 @@ local function RegisterTrackerKeybinds()
         )
     end
 
-    local panicToggleConfig = Config.Keybinds.togglePanic
-    if panicToggleConfig and panicToggleConfig.enabled ~= false and panicToggleConfig.command and panicToggleConfig.command ~= '' then
-        RegisterCommand(panicToggleConfig.command, function()
-            TogglePanicEnabled()
-        end, false)
-
-        RegisterKeyMapping(
-            panicToggleConfig.command,
-            panicToggleConfig.description or 'Toggle GPS panic button',
-            panicToggleConfig.defaultMapper or 'keyboard',
-            panicToggleConfig.defaultParameter or 'F8'
-        )
-    end
 end
 
 local function RegisterTrackerMenuBindings()

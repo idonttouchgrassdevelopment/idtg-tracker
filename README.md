@@ -177,15 +177,10 @@ Config.Performance = {
 
 ## Available Commands
 
-By default, the following commands are available (configure in `config.lua` under `Config.Commands`):
+By default, only the following commands are available (configure in `config.lua` under `Config.Commands`):
 
-- `/enabletracker` - Manually enable the GPS tracker
-- `/disabletracker` - Manually disable the GPS tracker
-  - By default, only configured officer jobs can manually disable tracker, unless the player is cuffed (`Config.TrackerDisable`).
-- `/trackerstatus` - Check current tracker status
+- `/tracker` - Open the ox_lib tracker control menu (tracker toggle + panic toggle + send panic)
 - `/panic` - Send a panic alert to authorized units
-- `/panicstatus` - Check whether panic button usage is enabled
-- `/trackermenu` - Open the ox_lib tracker menu to toggle tracker and panic button
 
 You can disable all commands with `Config.Commands.enabled = false` or disable each command individually with `enabled = false`.
 
@@ -196,9 +191,25 @@ Optional keybinds are available in `Config.Keybinds`:
 - `toggleTracker` (default: `F6`)
 - `panic` (default: `F7`)
 - `togglePanic` (default: `F8`)
-- `trackermenu` command keybind (default: `F9`)
+- `tracker` menu command keybind (default: `F6`)
 
 Set `Config.Keybinds.enabled = false` to disable keybind registration globally, or set individual keybind `enabled = false`.
+
+### Menu Branding (Department Logo)
+
+You can customize the menu branding in `Config.Menu.branding`:
+
+```lua
+Config.Menu.branding = {
+    enabled = true,
+    icon = 'shield-halved', -- Font Awesome icon (recommended)
+    titlePrefix = '🚓',      -- Appears before "GPS Command Tablet"
+    label = 'LSPD Unit Status'
+}
+```
+
+If your ox_lib build supports URL icons for context options, you can also try setting `icon` to a logo URL.
+
 
 ## Framework-Specific Notes
 
