@@ -548,7 +548,15 @@ function StartUpdateLoop()
             local lightsOn = false
 
             if vehicle and vehicle ~= 0 and GetPedInVehicleSeat(vehicle, -1) == ped then
-                lightsOn = IsVehicleSirenOn(vehicle) or IsVehicleAlarmOn(vehicle)
+                local alarmOn = false
+
+                if type(IsVehicleAlarmActivated) == 'function' then
+                    alarmOn = IsVehicleAlarmActivated(vehicle)
+                elseif type(IsVehicleAlarmOn) == 'function' then
+                    alarmOn = IsVehicleAlarmOn(vehicle)
+                end
+
+                lightsOn = IsVehicleSirenOn(vehicle) or alarmOn
             end
 
             TriggerServerEvent('gps_tracker:updatePosition', {
