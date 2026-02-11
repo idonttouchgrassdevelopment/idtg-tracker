@@ -200,6 +200,24 @@ local function IsJobConfigured(jobName)
     return false, nil
 end
 
+local function IsMenuJobAuthorized(jobName)
+    if not jobName or type(Config.Jobs) ~= 'table' then
+        return false
+    end
+
+    if Config.Jobs[jobName] and Config.Jobs[jobName].enabled then
+        return true
+    end
+
+    for configJob, jobConfig in pairs(Config.Jobs) do
+        if jobConfig.enabled and string.match(jobName, configJob) then
+            return true
+        end
+    end
+
+    return false
+end
+
 local function GetJobConfig(configJobName)
     if configJobName == '__default' then
         return Config.DefaultJob or {}
@@ -669,6 +687,11 @@ local function GetPanicEnabled()
 end
 
 local function OpenTrackerMenu()
+    if not PlayerData.job or not IsMenuJobAuthorized(PlayerData.job.name) then
+        ShowNotification('not_authorized')
+        return
+    end
+
     if not IsOxLibMenuAvailable() then
         ShowNotification('ox_lib_required')
         return
