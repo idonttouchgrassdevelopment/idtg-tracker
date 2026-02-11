@@ -477,7 +477,7 @@ local function ShowIdentityUpdateDialog()
 
     local response = lib.inputDialog('Update Unit Details', {
         { type = 'input', label = 'Callsign', description = 'Your active unit callsign for map legend', required = false, max = 48, default = defaults.callsign },
-        { type = 'input', label = 'Rank', description = 'Displayed rank/title in the map legend', required = false, max = 48, default = defaults.rank },
+        { type = 'input', label = 'Rank', description = 'Your displayed rank/title', required = false, max = 48, default = defaults.rank },
         { type = 'input', label = 'Department', description = 'Department currently clocked onto', required = false, max = 48, default = defaults.department }
     })
 
@@ -930,7 +930,7 @@ local function OpenTrackerMenu()
             },
             {
                 title = 'Update Unit Details',
-                description = 'Set your callsign, rank, and clocked-on department for map legend display.',
+                description = 'Set your callsign, rank/title, and clocked-on department.',
                 icon = 'id-badge',
                 disabled = isCuffed,
                 onSelect = function()
