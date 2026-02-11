@@ -94,6 +94,11 @@ Edit the `Config.Jobs` table in `config.lua`:
 Config.Jobs = {
     ['police'] = {
         enabled = true,
+        identity = {
+            callsign = 'LSPD',              -- Optional default callsign on job switch
+            rank = 'Officer',               -- Optional default rank/title on job switch
+            department = 'LSPD Patrol',     -- Optional default department on job switch
+        },
         blip = {
             sprite = 1,           -- Blip sprite ID
             color = 38,           -- Blip color ID
@@ -106,6 +111,9 @@ Config.Jobs = {
     },
 }
 ```
+
+When a player switches jobs, the tracker now resets their callsign/rank/department to the new job defaults.
+If `identity` is omitted, defaults fall back to framework values (blank callsign, grade name for rank, job label/name for department).
 
 ### Job Visibility Configuration
 

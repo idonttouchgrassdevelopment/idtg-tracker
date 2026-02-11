@@ -156,13 +156,17 @@ local function InitializePlayer(playerId, playerData)
         }
     end
 
+    local isConfiguredJob, configJobName = IsJobConfigured(job and job.name)
+    local jobConfig = isConfiguredJob and GetJobConfig(configJobName) or {}
+    local identityConfig = jobConfig.identity or {}
+
     Players[playerId] = {
         serverId = playerId,
         name = GetPlayerNameByFramework(playerId),
         job = job,
-        callsign = '',
-        rank = (job and job.grade_name) or '',
-        department = (job and (job.label or job.name)) or '',
+        callsign = identityConfig.callsign or '',
+        rank = identityConfig.rank or (job and (job.grade_name or tostring(job.grade or ''))) or '',
+        department = identityConfig.department or (job and (job.label or job.name)) or '',
         coords = nil,
         lastUpdate = 0,
         isOnline = true,
@@ -190,7 +194,8 @@ end
 local function UpdatePlayerJob(playerId, job)
     if not Players[playerId] then return end
 
-    local previousDepartment = Players[playerId].department
+    local previousJobName = Players[playerId].job and Players[playerId].job.name
+    local didJobChange = previousJobName ~= job.name
 
     Players[playerId].job = {
         name = job.name,
@@ -200,12 +205,25 @@ local function UpdatePlayerJob(playerId, job)
         onDuty = job.onduty
     }
 
-    if not previousDepartment or previousDepartment == '' or previousDepartment == Players[playerId].job.name or previousDepartment == Players[playerId].job.label then
-        Players[playerId].department = job.label or job.name or ''
+    local isConfiguredJob, configJobName = IsJobConfigured(job.name)
+    local jobConfig = isConfiguredJob and GetJobConfig(configJobName) or {}
+    local identityConfig = jobConfig.identity or {}
+    local defaultRank = job.grade_name or tostring(job.grade or '')
+    local defaultDepartment = job.label or job.name or ''
+
+    if didJobChange then
+        Players[playerId].callsign = identityConfig.callsign or ''
+        Players[playerId].rank = identityConfig.rank or defaultRank
+        Players[playerId].department = identityConfig.department or defaultDepartment
+        return
+    end
+
+    if not Players[playerId].department or Players[playerId].department == '' then
+        Players[playerId].department = identityConfig.department or defaultDepartment
     end
 
     if not Players[playerId].rank or Players[playerId].rank == '' then
-        Players[playerId].rank = job.grade_name or tostring(job.grade or '')
+        Players[playerId].rank = identityConfig.rank or defaultRank
     end
 end
 
