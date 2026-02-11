@@ -243,6 +243,13 @@ Config.Jobs = {
     -- Police Jobs
     ['police'] = {
         enabled = true,
+        -- Optional identity defaults applied when a player switches into this job.
+        -- Leave fields empty/nil to use framework defaults.
+        -- identity = {
+        --     callsign = 'LSPD',
+        --     rank = 'Officer',
+        --     department = 'Los Santos Police Department',
+        -- },
         -- Blip configuration for this job
         blip = {
             sprite = 60,           -- Blip sprite (1 = standard police blip)
@@ -262,6 +269,10 @@ Config.Jobs = {
 
     ['sasp'] = {
         enabled = true,  
+        -- identity = {
+        --     callsign = 'SASP',
+        --     department = 'San Andreas State Police',
+        -- },
         -- Blip configuration for this job
         blip = {
             sprite = 60,           -- Blip sprite (1 = standard police blip)
@@ -281,6 +292,10 @@ Config.Jobs = {
 
     ['fib'] = {
         enabled = true,
+        -- identity = {
+        --     callsign = 'FIB',
+        --     department = 'Federal Investigation Bureau',
+        -- },
         -- Blip configuration for this job
         blip = {
             sprite = 60,           -- Blip sprite (1 = standard police blip)
@@ -301,6 +316,10 @@ Config.Jobs = {
     -- Sheriff Department
     ['bcso'] = {
         enabled = true,
+        -- identity = {
+        --     callsign = 'BCSO',
+        --     department = 'Blaine County Sheriff\'s Office',
+        -- },
         blip = {
             sprite = 60,
             color = 52,
@@ -318,6 +337,10 @@ Config.Jobs = {
     -- Emergency Medical Services
     ['ems'] = {
         enabled = true,
+        -- identity = {
+        --     callsign = 'EMS',
+        --     department = 'Emergency Medical Services',
+        -- },
         blip = {
             sprite = 61,          -- Medical cross sprite
             color = 49,            -- White color
@@ -333,6 +356,10 @@ Config.Jobs = {
     -- EMS alias for servers that use the ambulance job name
     ['ambulance'] = {
         enabled = true,
+        -- identity = {
+        --     callsign = 'EMS',
+        --     department = 'Emergency Medical Services',
+        -- },
         blip = {
             sprite = 61,          -- Medical cross sprite
             color = 49,            -- White color
@@ -348,6 +375,10 @@ Config.Jobs = {
     -- Fire Department
     ['fire'] = {
         enabled = true,
+        -- identity = {
+        --     callsign = 'FIRE',
+        --     department = 'Fire Department',
+        -- },
         blip = {
             sprite = 436,         -- Fire department sprite
             color = 5,            -- Orange color
