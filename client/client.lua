@@ -348,7 +348,50 @@ end
 
 local function BuildBlipLabel(data)
     local name = data.playerName or 'Unknown'
-    return name
+    local parts = {}
+
+    if data.callsign and data.callsign ~= '' then
+        parts[#parts + 1] = data.callsign
+    end
+
+    if data.rank and data.rank ~= '' then
+        parts[#parts + 1] = data.rank
+    end
+
+    parts[#parts + 1] = name
+
+    if data.department and data.department ~= '' then
+        parts[#parts + 1] = ('(%s)'):format(data.department)
+    end
+
+    return table.concat(parts, ' | ')
+end
+
+local function UpdateIdentityMetadata(payload)
+    TriggerServerEvent('gps_tracker:updateIdentity', payload or {})
+end
+
+local function ShowIdentityUpdateDialog()
+    if not IsOxLibMenuAvailable() or type(lib.inputDialog) ~= 'function' then
+        ShowNotification('ox_lib_required')
+        return
+    end
+
+    local response = lib.inputDialog('Update Unit Details', {
+        { type = 'input', label = 'Callsign', description = 'Your active unit callsign for map legend', required = false, max = 48 },
+        { type = 'input', label = 'Rank', description = 'Displayed rank/title in the map legend', required = false, max = 48 },
+        { type = 'input', label = 'Department', description = 'Department currently clocked onto', required = false, max = 48 }
+    })
+
+    if not response then
+        return
+    end
+
+    UpdateIdentityMetadata({
+        callsign = response[1],
+        rank = response[2],
+        department = response[3]
+    })
 end
 
 local function IsJobInList(jobName, jobs)
@@ -777,6 +820,15 @@ local function OpenTrackerMenu()
                 onSelect = function()
                     UsePanic()
                 end
+            },
+            {
+                title = 'Update Unit Details',
+                description = 'Set your callsign, rank, and clocked-on department for map legend display.',
+                icon = 'id-badge',
+                disabled = isCuffed,
+                onSelect = function()
+                    ShowIdentityUpdateDialog()
+                end
             }
         }
     })
@@ -885,6 +937,10 @@ RegisterNetEvent('gps_tracker:usePanicItem', function()
     OpenTrackerMenu()
 end)
 
+RegisterNetEvent('gps_tracker:identityUpdated', function()
+    ShowNotification('identity_updated')
+end)
+
 local function GetCommandName(commandConfig)
     if type(commandConfig) == 'table' then
         if type(commandConfig.name) == 'string' and commandConfig.name ~= '' then
@@ -927,6 +983,24 @@ local function RegisterTrackerCommands()
     if IsCommandEnabled(Config.Commands.panic) then
         RegisterCommand(GetCommandName(Config.Commands.panic), function()
             UsePanic()
+        end, false)
+    end
+
+    if IsCommandEnabled(Config.Commands.callsign) then
+        RegisterCommand(GetCommandName(Config.Commands.callsign), function(_, args)
+            UpdateIdentityMetadata({ callsign = table.concat(args or {}, ' ') })
+        end, false)
+    end
+
+    if IsCommandEnabled(Config.Commands.rank) then
+        RegisterCommand(GetCommandName(Config.Commands.rank), function(_, args)
+            UpdateIdentityMetadata({ rank = table.concat(args or {}, ' ') })
+        end, false)
+    end
+
+    if IsCommandEnabled(Config.Commands.department) then
+        RegisterCommand(GetCommandName(Config.Commands.department), function(_, args)
+            UpdateIdentityMetadata({ department = table.concat(args or {}, ' ') })
         end, false)
     end
 

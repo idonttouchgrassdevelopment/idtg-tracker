@@ -15,6 +15,7 @@ A complete, production-ready GPS tracking system for FiveM roleplay servers. Fea
 - **Framework Support**: Full compatibility with ESX and QBCore frameworks
 - **Performance Optimized**: Efficient update intervals and batch processing for high-player-count servers
 - **Customizable Blips**: Configure different blip sprites, colors, and sizes per job type with player-name labels
+- **Unit Identity Legend**: Players can update callsign, rank, and active department shown in the map legend
 - **Distance Limiting**: Optional maximum distance for blip visibility
 
 ## Requirements
@@ -179,8 +180,11 @@ Config.Performance = {
 
 By default, only the following commands are available (configure in `config.lua` under `Config.Commands`):
 
-- `/tracker` - Open the ox_lib tracker control menu (tracker toggle + panic toggle + send panic)
+- `/tracker` - Open the ox_lib tracker control menu (tracker toggle + panic toggle + send panic + identity update)
 - `/panic` - Send a panic alert to authorized units
+- `/setcallsign <value>` - Update your legend callsign
+- `/setrank <value>` - Update your legend rank/title
+- `/setdept <value>` - Update your legend department/clocked-on assignment
 
 You can disable all commands with `Config.Commands.enabled = false` or disable each command individually with `enabled = false`.
 

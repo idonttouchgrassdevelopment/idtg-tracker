@@ -160,6 +160,9 @@ local function InitializePlayer(playerId, playerData)
         serverId = playerId,
         name = GetPlayerNameByFramework(playerId),
         job = job,
+        callsign = '',
+        rank = (job and job.grade_name) or '',
+        department = (job and (job.label or job.name)) or '',
         coords = nil,
         lastUpdate = 0,
         isOnline = true,
@@ -187,6 +190,8 @@ end
 local function UpdatePlayerJob(playerId, job)
     if not Players[playerId] then return end
 
+    local previousDepartment = Players[playerId].department
+
     Players[playerId].job = {
         name = job.name,
         grade = job.grade,
@@ -194,6 +199,14 @@ local function UpdatePlayerJob(playerId, job)
         label = job.label,
         onDuty = job.onduty
     }
+
+    if not previousDepartment or previousDepartment == '' or previousDepartment == Players[playerId].job.name or previousDepartment == Players[playerId].job.label then
+        Players[playerId].department = job.label or job.name or ''
+    end
+
+    if not Players[playerId].rank or Players[playerId].rank == '' then
+        Players[playerId].rank = job.grade_name or tostring(job.grade or '')
+    end
 end
 
 local function EnsurePlayerInitialized(playerId)
@@ -340,6 +353,9 @@ local function GetNearbyPlayers(requesterId)
                 table.insert(nearbyPlayers, {
                     serverId = playerId,
                     playerName = playerData.name,
+                    callsign = playerData.callsign,
+                    rank = playerData.rank,
+                    department = playerData.department,
                     job = playerData.job,
                     blip = GetJobConfig(targetConfigJobName).blip or {},
                     coords = playerData.coords,
@@ -394,6 +410,42 @@ RegisterNetEvent('gps_tracker:requestPlayerData', function()
     local playerId = source
     if not EnsurePlayerInitialized(playerId) then return end
     TriggerClientEvent('gps_tracker:updateBlips', playerId, GetNearbyPlayers(playerId))
+end)
+
+RegisterNetEvent('gps_tracker:updateIdentity', function(payload)
+    local playerId = source
+    if not EnsurePlayerInitialized(playerId) then return end
+
+    payload = payload or {}
+    local function sanitize(value, fallback)
+        if type(value) ~= 'string' then
+            return fallback
+        end
+
+        local trimmed = value:gsub('^%s+', ''):gsub('%s+$', '')
+        if trimmed == '' then
+            return fallback
+        end
+
+        if #trimmed > 48 then
+            trimmed = trimmed:sub(1, 48)
+        end
+
+        return trimmed
+    end
+
+    local player = Players[playerId]
+    local job = player and player.job or {}
+
+    player.callsign = sanitize(payload.callsign, player.callsign or '')
+    player.rank = sanitize(payload.rank, player.rank or (job.grade_name or ''))
+    player.department = sanitize(payload.department, player.department or (job.label or job.name or ''))
+
+    TriggerClientEvent('gps_tracker:identityUpdated', playerId, {
+        callsign = player.callsign,
+        rank = player.rank,
+        department = player.department
+    })
 end)
 
 

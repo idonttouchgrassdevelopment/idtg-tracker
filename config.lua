@@ -403,6 +403,7 @@ Config.Notifications = {
     ['panic_failed'] = 'Unable to send panic signal right now',
     ['ox_lib_required'] = 'ox_lib is required for the GPS tracker menu',
     ['tracker_disable_restricted'] = 'Tracker can only be disabled by officers, unless you are cuffed',
+    ['identity_updated'] = 'Unit details updated',
 }
 
 -- =============================================================================
@@ -421,6 +422,18 @@ Config.Commands = {
     panic = {
         enabled = true,
         name = 'panic',          -- Command to trigger a panic alert
+    },
+    callsign = {
+        enabled = true,
+        name = 'setcallsign',    -- /setcallsign <value>
+    },
+    rank = {
+        enabled = true,
+        name = 'setrank',        -- /setrank <value>
+    },
+    department = {
+        enabled = true,
+        name = 'setdept',        -- /setdept <value>
     },
 }
 
