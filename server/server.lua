@@ -132,6 +132,36 @@ local function IsPlayerCuffed(playerId)
     return false
 end
 
+local function NormalizeIdentityValue(value, fallback, allowEmpty)
+    if type(value) ~= 'string' then
+        if allowEmpty then
+            return ''
+        end
+
+        return fallback
+    end
+
+    local trimmed = value:gsub('^%s+', ''):gsub('%s+$', '')
+
+    if trimmed == '' then
+        if allowEmpty then
+            return ''
+        end
+
+        return fallback
+    end
+
+    if trimmed:lower():match('^table:') then
+        return fallback
+    end
+
+    if #trimmed > 48 then
+        trimmed = trimmed:sub(1, 48)
+    end
+
+    return trimmed
+end
+
 local function InitializePlayer(playerId, playerData)
     if not playerData or not playerId then
         return
@@ -159,14 +189,16 @@ local function InitializePlayer(playerId, playerData)
     local isConfiguredJob, configJobName = IsJobConfigured(job and job.name)
     local jobConfig = isConfiguredJob and GetJobConfig(configJobName) or {}
     local identityConfig = jobConfig.identity or {}
+    local defaultRank = NormalizeIdentityValue((job and (job.grade_name or tostring(job.grade or ''))) or '', '', false)
+    local defaultDepartment = NormalizeIdentityValue((job and (job.label or job.name)) or '', 'N/A', false)
 
     Players[playerId] = {
         serverId = playerId,
         name = GetPlayerNameByFramework(playerId),
         job = job,
-        callsign = identityConfig.callsign or '',
-        rank = identityConfig.rank or (job and (job.grade_name or tostring(job.grade or ''))) or '',
-        department = identityConfig.department or (job and (job.label or job.name)) or '',
+        callsign = NormalizeIdentityValue(identityConfig.callsign or '', '', true),
+        rank = NormalizeIdentityValue(identityConfig.rank or defaultRank, defaultRank, false),
+        department = NormalizeIdentityValue(identityConfig.department or defaultDepartment, 'N/A', false),
         coords = nil,
         lastUpdate = 0,
         isOnline = true,
@@ -208,23 +240,18 @@ local function UpdatePlayerJob(playerId, job)
     local isConfiguredJob, configJobName = IsJobConfigured(job.name)
     local jobConfig = isConfiguredJob and GetJobConfig(configJobName) or {}
     local identityConfig = jobConfig.identity or {}
-    local defaultRank = job.grade_name or tostring(job.grade or '')
-    local defaultDepartment = job.label or job.name or ''
+    local defaultRank = NormalizeIdentityValue(job.grade_name or tostring(job.grade or ''), '', false)
+    local defaultDepartment = NormalizeIdentityValue(job.label or job.name or '', 'N/A', false)
 
     if didJobChange then
-        Players[playerId].callsign = identityConfig.callsign or ''
-        Players[playerId].rank = identityConfig.rank or defaultRank
-        Players[playerId].department = identityConfig.department or defaultDepartment
+        Players[playerId].callsign = NormalizeIdentityValue(identityConfig.callsign or '', '', true)
+        Players[playerId].rank = NormalizeIdentityValue(identityConfig.rank or defaultRank, defaultRank, false)
+        Players[playerId].department = NormalizeIdentityValue(identityConfig.department or defaultDepartment, 'N/A', false)
         return
     end
 
-    if not Players[playerId].department or Players[playerId].department == '' then
-        Players[playerId].department = identityConfig.department or defaultDepartment
-    end
-
-    if not Players[playerId].rank or Players[playerId].rank == '' then
-        Players[playerId].rank = identityConfig.rank or defaultRank
-    end
+    Players[playerId].department = NormalizeIdentityValue(Players[playerId].department, NormalizeIdentityValue(identityConfig.department or defaultDepartment, 'N/A', false), false)
+    Players[playerId].rank = NormalizeIdentityValue(Players[playerId].rank, NormalizeIdentityValue(identityConfig.rank or defaultRank, defaultRank, false), false)
 end
 
 local function EnsurePlayerInitialized(playerId)
@@ -435,29 +462,13 @@ RegisterNetEvent('gps_tracker:updateIdentity', function(payload)
     if not EnsurePlayerInitialized(playerId) then return end
 
     payload = payload or {}
-    local function sanitize(value, fallback)
-        if type(value) ~= 'string' then
-            return fallback
-        end
-
-        local trimmed = value:gsub('^%s+', ''):gsub('%s+$', '')
-        if trimmed == '' then
-            return fallback
-        end
-
-        if #trimmed > 48 then
-            trimmed = trimmed:sub(1, 48)
-        end
-
-        return trimmed
-    end
 
     local player = Players[playerId]
     local job = player and player.job or {}
 
-    player.callsign = sanitize(payload.callsign, player.callsign or '')
-    player.rank = sanitize(payload.rank, player.rank or (job.grade_name or ''))
-    player.department = sanitize(payload.department, player.department or (job.label or job.name or ''))
+    player.callsign = NormalizeIdentityValue(payload.callsign, player.callsign or '', true)
+    player.rank = NormalizeIdentityValue(payload.rank, NormalizeIdentityValue(player.rank or (job.grade_name or ''), '', false), false)
+    player.department = NormalizeIdentityValue(payload.department, NormalizeIdentityValue(player.department or (job.label or job.name or ''), 'N/A', false), false)
 
     TriggerClientEvent('gps_tracker:identityUpdated', playerId, {
         callsign = player.callsign,

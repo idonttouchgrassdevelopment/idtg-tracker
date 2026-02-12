@@ -31,6 +31,10 @@ Config.UpdateInterval = 3000
 -- Set to 0 for unlimited distance
 Config.MaxDistance = 0
 
+-- Forces all tracker blips into one shared map legend category.
+-- Set to nil/false to use default category behavior.
+Config.TrackerBlipCategory = 7
+
 -- Automatically enable tracker when player goes on duty
 Config.AutoEnableOnDuty = true
 

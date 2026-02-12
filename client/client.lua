@@ -381,20 +381,41 @@ local function ResolvePlayerDisplayName(rawPlayerName)
     return 'Unknown'
 end
 
+local function NormalizeIdentityText(value, fallback)
+    if type(value) ~= 'string' then
+        return fallback
+    end
+
+    local trimmed = value:gsub('^%s+', ''):gsub('%s+$', '')
+
+    if trimmed == '' or trimmed:lower():match('^table:') then
+        return fallback
+    end
+
+    if #trimmed > 48 then
+        trimmed = trimmed:sub(1, 48)
+    end
+
+    return trimmed
+end
+
 local function BuildBlipLabel(data)
     local name = ResolvePlayerDisplayName(data.playerName)
     local parts = {}
+    local department = NormalizeIdentityText(data.department, 'N/A')
+    local callsign = NormalizeIdentityText(data.callsign, '')
+    local rank = NormalizeIdentityText(data.rank, '')
 
-    if data.department and data.department ~= '' then
-        parts[#parts + 1] = ('[%s]'):format(data.department)
+    if department ~= '' then
+        parts[#parts + 1] = ('[%s]'):format(department)
     end
 
-    if data.callsign and data.callsign ~= '' then
-        parts[#parts + 1] = data.callsign
+    if callsign ~= '' then
+        parts[#parts + 1] = callsign
     end
 
-    if data.rank and data.rank ~= '' then
-        parts[#parts + 1] = data.rank
+    if rank ~= '' then
+        parts[#parts + 1] = rank
     end
 
     parts[#parts + 1] = name
@@ -421,6 +442,10 @@ local function SanitizeIdentityValue(value, fallback, allowEmpty)
         return fallback
     end
 
+    if trimmed:lower():match('^table:') then
+        return fallback
+    end
+
     if #trimmed > 48 then
         trimmed = trimmed:sub(1, 48)
     end
@@ -434,11 +459,13 @@ end
 
 local function GetCurrentJobDefaultIdentity()
     local job = PlayerData and PlayerData.job or {}
+    local defaultRank = NormalizeIdentityText(job.grade_name or tostring(job.grade or ''), '')
+    local defaultDepartment = NormalizeIdentityText(job.label or job.name or '', 'N/A')
 
     return {
         callsign = '',
-        rank = job.grade_name or tostring(job.grade or ''),
-        department = job.label or job.name or ''
+        rank = defaultRank,
+        department = defaultDepartment
     }
 end
 
@@ -613,6 +640,11 @@ local function CreateOrUpdateBlip(data)
     SetBlipSprite(blip, sprite)
     SetBlipColour(blip, color)
     SetBlipScale(blip, scale)
+
+    local category = tonumber(Config.TrackerBlipCategory)
+    if category then
+        SetBlipCategory(blip, category)
+    end
 
     if ShouldBlipFlash(jobBlip, data.lightsOn) then
         SetBlipFlashes(blip, true)
