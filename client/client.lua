@@ -705,7 +705,9 @@ function SetTrackerStatus(state)
         return EnableTracker(true, true)
     end
 
-    return DisableTracker(true)
+    -- Treat export-based disables as programmatic actions (e.g., job switching scripts),
+    -- so they don't trigger manual-restriction notifications.
+    return DisableTracker(false)
 end
 
 function GetTrackerStatus()
