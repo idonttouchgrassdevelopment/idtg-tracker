@@ -327,7 +327,7 @@ function CheckJobAndEnableTracker()
 
     if not canUse then
         AutoEnableSuppressed = false
-        if TrackerEnabled and reason ~= 'cannot_use_cuffed' then
+        if TrackerEnabled then
             DisableTracker(false)
         end
         return
