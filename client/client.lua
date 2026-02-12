@@ -662,7 +662,9 @@ function EnableTracker(playAnimation, isManualAction)
     end
 
     TrackerEnabled = true
-    ShowNotification('tracker_enabled')
+    if isManualAction == true then
+        ShowNotification('tracker_enabled')
+    end
 
     TriggerServerEvent('gps_tracker:requestPlayerData')
     StartUpdateLoop()
@@ -690,7 +692,9 @@ function DisableTracker(isManualAction)
     TrackerEnabled = false
     TriggerServerEvent('gps_tracker:disableTracker')
     ClearAllBlips()
-    ShowNotification('tracker_disabled')
+    if isManualAction == true then
+        ShowNotification('tracker_disabled')
+    end
 
     return true
 end
