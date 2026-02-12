@@ -17,6 +17,8 @@ local SyncSavedIdentityForCurrentJob
 local IdentityProfiles = {}
 local IdentityProfilesLoaded = false
 local IdentityProfilesKvpKey = 'gps_tracker:identity_profiles'
+local DepartmentLegendCategories = {}
+local NextLegendCategory = 10
 
 local function ShowNotification(type)
     local message = (Config.Notifications and Config.Notifications[type]) or type
@@ -614,6 +616,14 @@ local function CreateOrUpdateBlip(data)
     SetBlipColour(blip, color)
     SetBlipScale(blip, scale)
 
+    local departmentKey = (type(data.department) == 'string' and data.department ~= '' and string.lower(data.department)) or 'general'
+    if not DepartmentLegendCategories[departmentKey] then
+        DepartmentLegendCategories[departmentKey] = NextLegendCategory
+        NextLegendCategory = NextLegendCategory + 1
+    end
+
+    SetBlipCategory(blip, DepartmentLegendCategories[departmentKey])
+
     if ShouldBlipFlash(jobBlip, data.lightsOn) then
         SetBlipFlashes(blip, true)
         SetBlipFlashInterval(blip, tonumber(jobBlip.flashIntervalMs) or 250)
@@ -633,6 +643,9 @@ function ClearAllBlips()
         end
         PlayerBlips[serverId] = nil
     end
+
+    DepartmentLegendCategories = {}
+    NextLegendCategory = 10
 end
 
 local function RemoveBlipByServerId(serverId)
@@ -674,13 +687,11 @@ end
 
 function DisableTracker(isManualAction)
     if IsPlayerCuffed() then
-        ShowNotification('cannot_use_cuffed')
         return false
     end
 
     if isManualAction == true then
         if not CanManuallyDisableTracker() then
-            ShowNotification('tracker_disable_restricted')
             return false
         end
 
